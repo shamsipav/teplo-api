@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeploAPI", "TeploAPI\TeploAPI.csproj", "{1FAE575B-6D8F-4337-B951-4319A2C683A0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1FAE575B-6D8F-4337-B951-4319A2C683A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FAE575B-6D8F-4337-B951-4319A2C683A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FAE575B-6D8F-4337-B951-4319A2C683A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FAE575B-6D8F-4337-B951-4319A2C683A0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7C3A17EC-43EA-427D-A56E-5BE358199871}
+	EndGlobalSection
+EndGlobal
