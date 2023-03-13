@@ -2,6 +2,7 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using TeploAPI.Data;
 using TeploAPI.Models;
 using TeploAPI.Services;
@@ -21,10 +22,8 @@ namespace TeploAPI.Controllers
             _validator = validator;
         }
 
-        // TODO: Добавить модель в параметры
-        // TODO: Добавить try, catch, FluentValidation
-        // TODO: Добавить названия для сохраненных вариантов исходных данных
-        // TODO: Добавить класс Response для унификации результатов методов
+        // TODO: Добавить названия для сохраненных вариантов исходных данных.
+        // TODO: Добавить класс Response для унификации результатов методов.
         /// <summary>
         /// Получение результатов расчета теплового режима в базовом периоде
         /// </summary>
@@ -38,7 +37,7 @@ namespace TeploAPI.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Errors[0].ErrorMessage);
 
-            // Remove this code
+            // Remove this code.
             furnace = Furnace.GetDefaultData();
 
             if (save)
@@ -50,20 +49,31 @@ namespace TeploAPI.Controllers
                 }
                 catch(Exception ex)
                 {
-                    Console.WriteLine($"Ошибка сохранения варианта исходных данных: {ex}");
+                    Log.Error($"HTTP POST api/base PostAsync: Ошибка сохранения варианта исходных данных: {ex}");
+                    return Problem($"Не удалось сохранить вариант исходных данных: {ex}");
                 }
             }
-            // TODO: Возможно, стоит вынести инициализацию сервиса
+
+            // TODO: Возможно, стоит вынести инициализацию сервиса.
             CalculateService calculate = new CalculateService();
 
-            var calculateResult = calculate.СalculateThermalRegime(furnace);
+            var calculateResult = new Result();
+
+            try
+            {
+                calculateResult = calculate.СalculateThermalRegime(furnace);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"HTTP POST api/base Ошибка выполнения расчета: {ex}");
+                return Problem($"Не удалось выполнить расчет в базовом периоде: {ex}");
+            }             
 
             var result = new ResultViewModel { Input = furnace, Result = calculateResult };
 
             return Ok(result);
         }
 
-        // TODO: try - catch
         /// <summary>
         /// Сравнение двух отчетных периодов
         /// </summary>
@@ -75,25 +85,53 @@ namespace TeploAPI.Controllers
         {
             CalculateService calculate = new CalculateService();
 
-            // Расчет теплового режима в базовом отчетном периоде
+            // Расчет теплового режима в базовом отчетном периоде.
             var basePeriodFurnance = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == basePeriodId);
             var calculateBaseResult = new Result();
 
             if (basePeriodFurnance != null)
-                calculateBaseResult = calculate.СalculateThermalRegime(basePeriodFurnance);
+            {
+                try
+                {
+                    calculateBaseResult = calculate.СalculateThermalRegime(basePeriodFurnance);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"HTTP POST api/base ComparisonAsync: Ошибка выполнения расчета: {ex}");
+                    return Problem($"Не удалось выполнить расчет в базовом периоде: {ex}");
+                }
+            } 
+            else
+            {
+                return NotFound("Вариант исходных данных для базового периода не был найден");
+            }
 
             var baseResult = new ResultViewModel { Input = basePeriodFurnance, Result = calculateBaseResult };
 
-            // Расчет теплового режима в сравнительном отчетном периоде
+            // Расчет теплового режима в сравнительном отчетном периоде.
             var comparativePeriodFurnance = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == comparativePeriodId);
             var calculateComparativeResult = new Result();
 
             if (comparativePeriodFurnance != null)
-                calculateComparativeResult = calculate.СalculateThermalRegime(comparativePeriodFurnance);
+            {
+                try
+                {
+                    calculateComparativeResult = calculate.СalculateThermalRegime(comparativePeriodFurnance);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"HTTP POST api/base ComparisonAsync: Ошибка выполнения расчета: {ex}");
+                    return Problem($"Не удалось выполнить расчет в сравнительном периоде периоде: {ex}");
+                }
+            }
+            else
+            {
+                return NotFound("Вариант исходных данных для сравнительного периода не был найден");
+            }
 
             var comparativeResult = new ResultViewModel { Input = comparativePeriodFurnance, Result = calculateComparativeResult };
 
-            // Объединение результатов расчетов
+            // Объединение результатов расчетов.
             var comparison = new ComparisonViewModel { BasePeriodResult = baseResult, СomparativePeriodResult = comparativeResult };
 
             return Ok(comparison);

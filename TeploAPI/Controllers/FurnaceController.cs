@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using TeploAPI.Data;
 using TeploAPI.Models;
 
@@ -24,7 +25,12 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> GetAsync()
         {
             var furnances = await _context.Furnaces.AsNoTracking().ToListAsync();
-            return Ok(furnances);
+            if (furnances.Any())
+            {
+                return Ok(furnances);
+            }
+
+            return NotFound("Не найдены сохраненные варианты расчета");
         }
 
         /// <summary>
@@ -40,8 +46,16 @@ namespace TeploAPI.Controllers
                 var furnace = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == furnaceId);
                 if (furnace != null)
                 {
-                    _context.Furnaces.Remove(furnace);
-                    await _context.SaveChangesAsync();
+                    try
+                    {
+                        _context.Furnaces.Remove(furnace);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"HTTP DELETE api/furnace DeleteAsync: Ошибка удаления варианта исходных данных: {ex}");
+                        return Problem($"Не удалось удалить вариант исходных данных: {ex}");
+                    }
 
                     return Ok(furnace);
                 }
