@@ -70,7 +70,7 @@ namespace TeploAPI.Services
         }
 
         // TODO: Refactoring.
-        public Furnace CalculateResult(Furnace input, FurnaceProject project, Reference reference)
+        public Furnace CalculateProjectThermalRegime(Furnace input, FurnaceProject project, Reference reference)
         {
             double cokeConsumption = input.SpecificConsumptionOfCoke;
             double furnanceCapacity = input.DailyСapacityOfFurnace;
