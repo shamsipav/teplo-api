@@ -1,7 +1,10 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TeploAPI.Data;
 using TeploAPI.Middlewares;
+using TeploAPI.Models;
+using TeploAPI.Models.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IValidator<Furnace>, FurnaceValidator>();
 
 var app = builder.Build();
 

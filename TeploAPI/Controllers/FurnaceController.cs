@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TeploAPI.Data;
+using TeploAPI.Models;
 
 namespace TeploAPI.Controllers
 {
@@ -36,10 +38,15 @@ namespace TeploAPI.Controllers
             if (furnaceId != null)
             {
                 var furnace = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == furnaceId);
-                _context.Furnaces.Remove(furnace);
-                await _context.SaveChangesAsync();
+                if (furnace != null)
+                {
+                    _context.Furnaces.Remove(furnace);
+                    await _context.SaveChangesAsync();
 
-                return Ok(furnace);
+                    return Ok(furnace);
+                }
+
+                return NotFound("Не удалось найти информацию об варианте расчета");
             }
 
             return NotFound("Не удалось найти информацию об варианте расчета");

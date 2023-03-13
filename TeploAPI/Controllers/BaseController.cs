@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TeploAPI.Data;
 using TeploAPI.Models;
@@ -11,14 +13,16 @@ namespace TeploAPI.Controllers
     [Route("api/[controller]")]
     public class BaseController : Controller
     {
+        private IValidator<Furnace> _validator;
         private TeploDBContext _context;
-        public BaseController(TeploDBContext context)
+        public BaseController(TeploDBContext context, IValidator<Furnace> validator)
         {
             _context = context;
+            _validator = validator;
         }
 
         // TODO: Добавить модель в параметры
-        // TODO: Добавить try, catch, FluentValidation, логирование, middleware
+        // TODO: Добавить try, catch, FluentValidation
         // TODO: Добавить названия для сохраненных вариантов исходных данных
         // TODO: Добавить класс Response для унификации результатов методов
         /// <summary>
@@ -29,6 +33,11 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync(Furnace furnace, bool save)
         {
+            ValidationResult validationResult = await _validator.ValidateAsync(furnace);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors[0].ErrorMessage);
+
             // Remove this code
             furnace = Furnace.GetDefaultData();
 
