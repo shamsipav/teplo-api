@@ -33,6 +33,7 @@ namespace TeploAPI.Controllers
             return NotFound("Не найдены сохраненные варианты расчета");
         }
 
+        // TODO: Try, catch на обращения к БД
         /// <summary>
         /// Удаление варианта исходных данных
         /// </summary>
