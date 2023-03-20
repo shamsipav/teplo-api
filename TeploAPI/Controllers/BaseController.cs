@@ -132,7 +132,7 @@ namespace TeploAPI.Controllers
             var comparativeResult = new ResultViewModel { Input = comparativePeriodFurnance, Result = calculateComparativeResult };
 
             // Объединение результатов расчетов.
-            var comparison = new ComparisonViewModel { BasePeriodResult = baseResult, СomparativePeriodResult = comparativeResult };
+            var comparison = new UnionResultViewModel { BaseResult = baseResult, ComparativeResult = comparativeResult };
 
             return Ok(comparison);
         }

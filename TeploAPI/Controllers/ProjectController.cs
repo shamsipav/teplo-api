@@ -5,6 +5,8 @@ using Serilog;
 using TeploAPI.Data;
 using TeploAPI.Migrations;
 using TeploAPI.Models;
+using TeploAPI.Services;
+using TeploAPI.ViewModels;
 
 namespace TeploAPI.Controllers
 {
@@ -18,32 +20,76 @@ namespace TeploAPI.Controllers
             _context = context;
         }
 
+        // TODO: ПРОВЕРИТЬ РАБОТЕТ ЛИ КОРРЕКТНО ПРОЕКТНЫЙ РЕЖИМ
         // TODO: Refactoring.
         [HttpPost]
-        public async Task<IActionResult> PostAsync(int? inputDataId)
+        public async Task<IActionResult> PostAsync(FurnaceProject projectPeriodFurnaceData, int? inputDataId)
         {
             var basePeriodFurnaceData = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == inputDataId);
+            var basePeriodFurnaceDataClear = basePeriodFurnaceData;
 
+            // TODO: Добавить try, catch, log, return Error
             // Из базы
             var cokeCoefficients = await _context.Сoefficients.FirstOrDefaultAsync(i => i.Id == 1);
             var furnanceCapacityCoefficients = await _context.Сoefficients.FirstOrDefaultAsync(i => i.Id == 2);
 
             Reference reference = new Reference { CokeCunsumptionCoefficents = cokeCoefficients, FurnanceCapacityCoefficents = furnanceCapacityCoefficients };
 
-            //ProjectCalculateModel projectResult = new ProjectCalculateModel(inputData, projectView.Project, reference);
+            // TODO: Возможно, стоит вынести инициализацию сервиса.
+            CalculateService calculate = new CalculateService();
 
-            //inputData.BlastTemperature = projectResult.Project.BlastTemperature;
-            //inputData.BlastHumidity = projectResult.Project.BlastHumidity;
-            //inputData.OxygenContentInBlast = projectResult.Project.OxygenContentInBlast;
-            //inputData.ColoshGasPressure = projectResult.Project.ColoshGasPressure;
-            //inputData.NaturalGasConsumption = projectResult.Project.NaturalGasConsumption;
-            //inputData.Chugun_SI = projectResult.Project.Chugun_SI;
-            //inputData.Chugun_MN = projectResult.Project.Chugun_MN;
-            //inputData.Chugun_P = projectResult.Project.Chugun_P;
-            //inputData.Chugun_S = projectResult.Project.Chugun_S;
-            //inputData.AshContentInCoke = projectResult.Project.AshContentInCoke;
-            //inputData.SulfurContentInCoke = projectResult.Project.SulfurContentInCoke;
-            return Ok("test");
+            var projectChangedInputData = new Furnace();
+            
+            if (basePeriodFurnaceData!= null && basePeriodFurnaceDataClear != null)
+            {
+                try
+                {
+                    projectChangedInputData = calculate.CalculateProjectThermalRegime(basePeriodFurnaceData, projectPeriodFurnaceData, reference);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"HTTP POST api/project Ошибка выполнения корректировки исходных данных в проектном периоде: {ex}");
+                    return Problem($"Не удалось выполнить корректировку исходных данных в проектном периоде: {ex}");
+                }
+
+                basePeriodFurnaceData.BlastTemperature = projectChangedInputData.BlastTemperature;
+                basePeriodFurnaceData.BlastHumidity = projectChangedInputData.BlastHumidity;
+                basePeriodFurnaceData.OxygenContentInBlast = projectChangedInputData.OxygenContentInBlast;
+                basePeriodFurnaceData.ColoshGasPressure = projectChangedInputData.ColoshGasPressure;
+                basePeriodFurnaceData.NaturalGasConsumption = projectChangedInputData.NaturalGasConsumption;
+                basePeriodFurnaceData.Chugun_SI = projectChangedInputData.Chugun_SI;
+                basePeriodFurnaceData.Chugun_MN = projectChangedInputData.Chugun_MN;
+                basePeriodFurnaceData.Chugun_P = projectChangedInputData.Chugun_P;
+                basePeriodFurnaceData.Chugun_S = projectChangedInputData.Chugun_S;
+                basePeriodFurnaceData.AshContentInCoke = projectChangedInputData.AshContentInCoke;
+                basePeriodFurnaceData.SulfurContentInCoke = projectChangedInputData.SulfurContentInCoke;
+
+                // Расчет теплового режима в базовом периоде и проектном периодах
+                var baseResultData = new Result();
+                var projectResultData = new Result();
+
+                try
+                {
+                    baseResultData = calculate.СalculateThermalRegime(basePeriodFurnaceDataClear);
+                    projectResultData = calculate.СalculateThermalRegime(basePeriodFurnaceData);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"HTTP POST api/project Ошибка выполнения расчета в проектном периоде: {ex}");
+                    return Problem($"Не удалось выполнить расчет в базовом периоде: {ex}");
+                }
+
+                var baseResult = new ResultViewModel { Input = basePeriodFurnaceDataClear, Result = baseResultData };
+                var projectResult = new ResultViewModel { Input = basePeriodFurnaceData, Result = projectResultData };
+
+                var result = new UnionResultViewModel { BaseResult = baseResult, ComparativeResult = projectResult };
+
+                return Ok(result);
+            }
+
+            return NotFound("Не удалось найти информацию об варианте расчета");
+
+            //ProjectCalculateModel projectResult = new ProjectCalculateModel(inputData, projectView.Project, reference);
         }
     }
 }
