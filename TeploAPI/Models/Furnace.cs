@@ -207,6 +207,22 @@
         /// </summary>
         public double AverageSizeOfPieceCharge { get; set; }
 
+        // Для расчета теоретической температуры горения углерода кокса.
+        /// <summary>
+        /// Теплота горения природного газа на фурмах, кДж/м3
+        /// </summary>
+        public double HeatOfBurningOfNaturalGasOnFarms { get; set; }
+
+        /// <summary>
+        /// Теплота неполного горения углерода кокса, кДж/кг
+        /// </summary>
+        public double HeatOfIncompleteBurningCarbonOfCoke { get; set; }
+
+        /// <summary>
+        /// Температура кокса, пришедшего к фурмам, °C
+        /// </summary>
+        public double TemperatureOfCokeThatCameToTuyeres { get; set; }
+
         // ПОЛУЧЕНИЕ ИСХОДНЫХ ЗНАЧЕНИЙ
         public static Furnace GetDefaultData()
         {
@@ -255,7 +271,10 @@
                 HeatCapacityOfCoke = 1.09,
                 AcceptedTemperatureOfBackupZone = 950,
                 ProportionOfHeatLossesOfLowerPart = 0,
-                AverageSizeOfPieceCharge = 0.018
+                AverageSizeOfPieceCharge = 0.018,
+                HeatOfBurningOfNaturalGasOnFarms = 1590,
+                HeatOfIncompleteBurningCarbonOfCoke = 9800,
+                TemperatureOfCokeThatCameToTuyeres = 1500
             };
         }
     }

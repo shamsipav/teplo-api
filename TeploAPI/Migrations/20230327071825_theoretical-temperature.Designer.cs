@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TeploAPI.Data;
@@ -11,9 +12,11 @@ using TeploAPI.Data;
 namespace TeploAPI.Migrations
 {
     [DbContext(typeof(TeploDBContext))]
-    partial class TeploDBContextModelSnapshot : ModelSnapshot
+    [Migration("20230327071825_theoretical-temperature")]
+    partial class theoreticaltemperature
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

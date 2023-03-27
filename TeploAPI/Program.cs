@@ -23,6 +23,13 @@ builder.Services.AddScoped<IValidator<Furnace>, FurnaceValidator>();
 
 var app = builder.Build();
 
+app.UseCors(builder => builder
+    .WithOrigins("http://localhost:3000")
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials()
+    .SetIsOriginAllowed(origin => true));
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

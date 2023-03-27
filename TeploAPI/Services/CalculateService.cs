@@ -11,7 +11,6 @@ namespace TeploAPI.Services
         {
             var result = new Result();
 
-            // ПРЕДВАРИТЕЛЬНЫЕ РАСЧЕТЫ
             result.AverageSectionalAreaOfFurnaceShaft = Math.PI * 0.25 * Math.Pow(((0.001 * input.DiameterOfColoshnik + 0.001 * input.DiameterOfRaspar) * 0.5), 2);
 
             result.HeatCapacityOfDiatomicGasesAtBlastTemperature = 1.2897 + 0.000121 * input.BlastTemperature;
@@ -54,17 +53,27 @@ namespace TeploAPI.Services
             result.ThermalConductivityOfGrateGas = (19.4 + 1.826 * input.ColoshGas_H2 + 0.0073 * input.ColoshGasTemperature) * 0.001;
             result.KinematicViscosityOfGrateGas = (1.456 * input.ColoshGasTemperature + 5.14 * input.ColoshGas_H2 - 35.43) * 0.0000001;
             result.VolumetricHeatTransferCoefficient = ((0.259 * Math.Pow(result.TrueHeatCapacityOfGrateGas, 0.333) * Math.Pow(result.ThermalConductivityOfGrateGas, 0.6667) * Math.Pow(result.GasFiltrationFurnaceShaftSpeed, 0.9) * Math.Pow((1 + input.ColoshGasTemperature / 273), 0.57)) / (Math.Pow(input.AverageSizeOfPieceCharge, 1.1) * Math.Pow(result.KinematicViscosityOfGrateGas, 0.57))) * 0.001;
-            // TODO: Под сомнением выше
             result.ChargeFlowRatePassingThroughFurnaceShaft = (input.SpecificConsumptionOfCoke + input.SpecificConsumptionOfZRM) * input.DailyСapacityOfFurnace / (24 * 60 * 60);
             result.AverageHeatCapacityOfCharge = (1 - input.ShareOfPelletsInCharge) * input.HeatCapacityOfAgglomerate * 0.25 + input.ShareOfPelletsInCharge * input.HeatCapacityOfPellets * 0.25 + 0.5 * input.HeatCapacityOfCoke;
 
-            // TODO: Ниже всё нужно перепроверить
             result.IntermediateNumerator = result.ChargeFlowRatePassingThroughFurnaceShaft * result.AverageHeatCapacityOfCharge * Math.Pow((input.AcceptedTemperatureOfBackupZone - 100), 2);
             result.IntermediateDenominator = result.VolumetricHeatTransferCoefficient * result.AverageSectionalAreaOfFurnaceShaft * 7 * input.AcceptedTemperatureOfBackupZone * (input.ColoshGasTemperature - 100);
             result.IntermediateRatio = result.IntermediateNumerator / result.IntermediateDenominator;
             result.IntermediateExhibitor = -(result.VolumetricHeatTransferCoefficient * result.AverageSectionalAreaOfFurnaceShaft * 7 * (input.ColoshGasTemperature - 100)) / (result.ChargeFlowRatePassingThroughFurnaceShaft * result.AverageHeatCapacityOfCharge * (input.AcceptedTemperatureOfBackupZone - 100));
 
             result.IndexOfTheFurnaceTop = 1 - result.IntermediateRatio * (1 - Math.Pow(2.7183, result.IntermediateExhibitor));
+
+            result.BlastConsumptionRequiredForBurningOneKgOfCarbonCoke = (0.9333) / (0.01 * input.OxygenContentInBlast + 0.00124 * input.BlastHumidity);
+            result.BlastConsumptionForConversionOfOneMeterCoubOfNaturalGas = (0.5) / (0.01 * input.OxygenContentInBlast + 0.00124 * input.BlastHumidity);
+            result.OutputOfTheTuyereGasBurningAtTheTuyeres = 1.8667 + result.BlastConsumptionRequiredForBurningOneKgOfCarbonCoke * (1 - 0.01 * input.OxygenContentInBlast + 0.00124 * input.BlastHumidity);
+            result.OutputOfTuyereGasOfNaturalGasDuringСonversion = 3 + result.BlastConsumptionForConversionOfOneMeterCoubOfNaturalGas * (1 - 0.01 * input.OxygenContentInBlast + 0.00124 * input.BlastHumidity);
+            result.HeatCapacityOfDiatomicGasesAtHotBlastTemperature = 1.2897 + 0.000121 * input.BlastTemperature;
+            result.HeatCapacityOfWaterVaporAtHotBlastTemperature = 1.4560 + 0.000282 * input.BlastTemperature;
+            result.HeatContentOfHotBlast = result.HeatCapacityOfDiatomicGasesAtHotBlastTemperature * input.BlastTemperature - 0.00124 * input.BlastHumidity * (10800 - result.HeatCapacityOfWaterVaporAtHotBlastTemperature * input.BlastTemperature);
+            result.HeatContentOfCarbonOfCokeToTuyeres = input.HeatCapacityOfCoke * input.TemperatureOfCokeThatCameToTuyeres;
+            result.NaturalGasConsumptionPerOneKgOfCoke = input.NaturalGasConsumption / result.AmountOfCarbonOfCokeBurningAtTuyeres;
+            result.HeatContentOfFurnaceGases = (input.HeatOfIncompleteBurningCarbonOfCoke + result.BlastConsumptionRequiredForBurningOneKgOfCarbonCoke * result.HeatContentOfHotBlast + result.HeatContentOfCarbonOfCokeToTuyeres + result.NaturalGasConsumptionPerOneKgOfCoke * (input.HeatOfBurningOfNaturalGasOnFarms + result.BlastConsumptionForConversionOfOneMeterCoubOfNaturalGas * result.HeatContentOfHotBlast)) / (result.OutputOfTheTuyereGasBurningAtTheTuyeres + result.NaturalGasConsumptionPerOneKgOfCoke * result.OutputOfTuyereGasOfNaturalGasDuringСonversion);
+            result.TheoreticalBurningTemperatureOfCarbonCoke = 165 + 0.6113 * result.HeatContentOfFurnaceGases;
 
             return result;
         }

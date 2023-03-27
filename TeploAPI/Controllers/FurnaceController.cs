@@ -33,6 +33,19 @@ namespace TeploAPI.Controllers
             return NotFound("Не найдены сохраненные варианты расчета");
         }
 
+        // TODO: Try, catch (?)
+        /// <summary>
+        /// Получение дефолтного варианта для расчета
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("default")]
+        public IActionResult GetDefault()
+        {
+            var furnace = Furnace.GetDefaultData();
+
+            return Ok(furnace);
+        }
+
         // TODO: Try, catch на обращения к БД
         /// <summary>
         /// Удаление варианта исходных данных
