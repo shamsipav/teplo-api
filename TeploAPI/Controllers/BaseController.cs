@@ -37,13 +37,11 @@ namespace TeploAPI.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Errors[0].ErrorMessage);
 
-            // Remove this code.
-            furnace = Furnace.GetDefaultData();
-
             if (save)
             {
                 try
                 {
+                    furnace.SaveDate = DateTime.Now;
                     _context.Furnaces.Add(furnace);
                     await _context.SaveChangesAsync();
                 }

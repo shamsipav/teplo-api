@@ -9,7 +9,11 @@ namespace TeploAPI.Data
         public DbSet<Сoefficients> Сoefficients { get; set; }
         public DbSet<Reference> References { get; set; }
 
-        public TeploDBContext(DbContextOptions<TeploDBContext> options) : base(options) { }
+        public TeploDBContext(DbContextOptions<TeploDBContext> options) : base(options) 
+        {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
