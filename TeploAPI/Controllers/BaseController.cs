@@ -81,6 +81,15 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> ComparisonAsync(int basePeriodId, int comparativePeriodId)
         {
+            if (basePeriodId == 0)
+                return BadRequest("Необходимо указать вариант исходных данных для базового периода");
+
+            if (comparativePeriodId == 0)
+                return BadRequest("Необходимо указать вариант исходных данных для сравнительного периода");
+
+            if (basePeriodId == comparativePeriodId)
+                return BadRequest("Необходимо указать разные варианты исходных данных");
+
             CalculateService calculate = new CalculateService();
 
             // Расчет теплового режима в базовом отчетном периоде.
