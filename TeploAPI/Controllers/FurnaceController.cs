@@ -35,12 +35,13 @@ namespace TeploAPI.Controllers
                 return Problem($"Не удалось получить сохраненные варианты исходных данных: {ex}");
             }
 
-            if (furnaces.Any())
-            {
-                return Ok(furnaces);
-            }
+            //if (furnaces.Any())
+            //{
+            //    return Ok(furnaces);
+            //}
 
-            return NotFound("Не найдены сохраненные варианты расчета");
+            //return NotFound(furnaces);
+            return Ok(furnaces);
         }
 
         /// <summary>

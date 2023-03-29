@@ -21,22 +21,24 @@ namespace TeploAPI.Controllers
 
         // TODO: ПРОВЕРИТЬ РАБОТЕТ ЛИ КОРРЕКТНО ПРОЕКТНЫЙ РЕЖИМ
         // TODO: Refactoring.
+        // TODO: Стоит поменять inputDataId на basePeriodFurnaceData?
         [HttpPost]
         public async Task<IActionResult> PostAsync(FurnaceProject projectPeriodFurnaceData, int? inputDataId)
         {
             var basePeriodFurnaceData = new Furnace();
+            var basePeriodFurnaceDataClear = new Furnace();
 
             try
             {
-                basePeriodFurnaceData = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == inputDataId);
+                // TODO: Бессмысленное повторное обращение?
+                basePeriodFurnaceData = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(d => d.Id == inputDataId);
+                basePeriodFurnaceDataClear = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(d => d.Id == inputDataId);
             }
             catch (Exception ex)
             {
                 Log.Error($"HTTP POST api/project Ошибка получения набора исходных данных в базовом периоде: {ex}");
                 return Problem($"Не удалось получить набор исходных данных для базового периода: {ex}");
             }
-
-            var basePeriodFurnaceDataClear = basePeriodFurnaceData;
 
             // TODO: Добавить try, catch, log, return Error
             // Из базы
@@ -45,8 +47,8 @@ namespace TeploAPI.Controllers
 
             try
             {
-                cokeCoefficients = await _context.Сoefficients.FirstOrDefaultAsync(i => i.Id == 1);
-                furnanceCapacityCoefficients = await _context.Сoefficients.FirstOrDefaultAsync(i => i.Id == 2);
+                cokeCoefficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 1);
+                furnanceCapacityCoefficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 2);
             }
             catch (Exception ex)
             {
@@ -58,7 +60,7 @@ namespace TeploAPI.Controllers
 
             CalculateService calculate = new CalculateService();
 
-            var projectChangedInputData = new Furnace();
+            var projectChangedInputData = new ProjectDataViewModel();
             
             if (basePeriodFurnaceData!= null && basePeriodFurnaceDataClear != null)
             {
@@ -72,19 +74,21 @@ namespace TeploAPI.Controllers
                     return Problem($"Не удалось выполнить корректировку исходных данных в проектном периоде: {ex}");
                 }
 
-                basePeriodFurnaceData.BlastTemperature = projectChangedInputData.BlastTemperature;
-                basePeriodFurnaceData.BlastHumidity = projectChangedInputData.BlastHumidity;
-                basePeriodFurnaceData.OxygenContentInBlast = projectChangedInputData.OxygenContentInBlast;
-                basePeriodFurnaceData.ColoshGasPressure = projectChangedInputData.ColoshGasPressure;
-                basePeriodFurnaceData.NaturalGasConsumption = projectChangedInputData.NaturalGasConsumption;
-                basePeriodFurnaceData.Chugun_SI = projectChangedInputData.Chugun_SI;
-                basePeriodFurnaceData.Chugun_MN = projectChangedInputData.Chugun_MN;
-                basePeriodFurnaceData.Chugun_P = projectChangedInputData.Chugun_P;
-                basePeriodFurnaceData.Chugun_S = projectChangedInputData.Chugun_S;
-                basePeriodFurnaceData.AshContentInCoke = projectChangedInputData.AshContentInCoke;
-                basePeriodFurnaceData.SulfurContentInCoke = projectChangedInputData.SulfurContentInCoke;
+                basePeriodFurnaceData.BlastTemperature = projectChangedInputData.ProjectInputData.BlastTemperature;
+                basePeriodFurnaceData.BlastHumidity = projectChangedInputData.ProjectInputData.BlastHumidity;
+                basePeriodFurnaceData.OxygenContentInBlast = projectChangedInputData.ProjectInputData.OxygenContentInBlast;
+                basePeriodFurnaceData.ColoshGasPressure = projectChangedInputData.ProjectInputData.ColoshGasPressure;
+                basePeriodFurnaceData.NaturalGasConsumption = projectChangedInputData.ProjectInputData.NaturalGasConsumption;
+                basePeriodFurnaceData.Chugun_SI = projectChangedInputData.ProjectInputData.Chugun_SI;
+                basePeriodFurnaceData.Chugun_MN = projectChangedInputData.ProjectInputData.Chugun_MN;
+                basePeriodFurnaceData.Chugun_P = projectChangedInputData.ProjectInputData.Chugun_P;
+                basePeriodFurnaceData.Chugun_S = projectChangedInputData.ProjectInputData.Chugun_S;
+                basePeriodFurnaceData.AshContentInCoke = projectChangedInputData.ProjectInputData.AshContentInCoke;
+                basePeriodFurnaceData.SulfurContentInCoke = projectChangedInputData.ProjectInputData.SulfurContentInCoke;
+                basePeriodFurnaceData.SpecificConsumptionOfCoke = projectChangedInputData.ChangedInputData.SpecificConsumptionOfCoke;
+                basePeriodFurnaceData.DailyСapacityOfFurnace = projectChangedInputData.ChangedInputData.DailyСapacityOfFurnace;
 
-                // Расчет теплового режима в базовом периоде и проектном периодах
+                // Расчет теплового режима в базовом и проектном периодах
                 var baseResultData = new Result();
                 var projectResultData = new Result();
 

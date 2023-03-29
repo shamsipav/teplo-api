@@ -11,6 +11,7 @@ namespace TeploAPI.Data
 
         public TeploDBContext(DbContextOptions<TeploDBContext> options) : base(options) 
         {
+            // Фикс ошибки сохранения DateTime в PostgreSQL
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
         }
