@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TeploAPI.Data;
-using TeploAPI.Migrations;
 using TeploAPI.Models;
 
 namespace TeploAPI.Controllers
@@ -41,8 +40,19 @@ namespace TeploAPI.Controllers
         {
             if (reference.CokeCunsumptionCoefficents != null && reference.FurnanceCapacityCoefficents != null)
             {
-                var cokeCofficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 1);
-                var furnanceCapacityCoefficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 2);
+                var cokeCofficients = new Сoefficients();
+                var furnanceCapacityCoefficients = new Сoefficients();
+
+                try
+                {
+                    cokeCofficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 1);
+                    furnanceCapacityCoefficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 2);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"HTTP PUT api/reference PutAsync: Ошибка получения коэффициентов для справочника: {ex}");
+                    return Problem($"Не удалось получить коэффициенты для справочника: {ex}");
+                }
 
                 if (cokeCofficients != null && furnanceCapacityCoefficients != null)
                 {
