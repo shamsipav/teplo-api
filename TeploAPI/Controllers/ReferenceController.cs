@@ -39,7 +39,7 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync(ReferenceDTO reference)
         {
-            if (reference != null)
+            if (reference.CokeCunsumptionCoefficents != null && reference.FurnanceCapacityCoefficents != null)
             {
                 var cokeCofficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 1);
                 var furnanceCapacityCoefficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 2);
@@ -104,6 +104,10 @@ namespace TeploAPI.Controllers
                     Log.Error($"HTTP PUT api/reference PutAsync: Ошибка обновления справочника корректировочных коэффициентов: {ex}");
                     return Problem($"Не удалось обновить справочник корректировочных коэффициентов: {ex}");
                 }
+            }
+            else
+            {
+                return BadRequest("Необходимо указать значения для обновления справочника корректировочных коэффициентов");
             }
 
             return Ok(reference);

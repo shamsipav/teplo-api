@@ -92,15 +92,29 @@ namespace TeploAPI.Controllers
 
             CalculateService calculate = new CalculateService();
 
+            // Получение наборов исходных данных для двух периодов.
+            var basePeriodFurnace = new Furnace();
+            var comparativePeriodFurnance = new Furnace();
+
+            try
+            {
+                basePeriodFurnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == basePeriodId);
+                comparativePeriodFurnance = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == comparativePeriodId);
+            }
+            catch(Exception ex)
+            {
+                Log.Error($"HTTP POST api/base ComparisonAsync: Ошибка получения наборов исходных данных для двух периодов: {ex}");
+                return Problem($"Не удалось получить наборы исходных данных для двух периодов: {ex}");
+            }
+            
             // Расчет теплового режима в базовом отчетном периоде.
-            var basePeriodFurnance = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == basePeriodId);
             var calculateBaseResult = new Result();
 
-            if (basePeriodFurnance != null)
+            if (basePeriodFurnace != null)
             {
                 try
                 {
-                    calculateBaseResult = calculate.СalculateThermalRegime(basePeriodFurnance);
+                    calculateBaseResult = calculate.СalculateThermalRegime(basePeriodFurnace);
                 }
                 catch (Exception ex)
                 {
@@ -113,10 +127,9 @@ namespace TeploAPI.Controllers
                 return NotFound("Вариант исходных данных для базового периода не был найден");
             }
 
-            var baseResult = new ResultViewModel { Input = basePeriodFurnance, Result = calculateBaseResult };
+            var baseResult = new ResultViewModel { Input = basePeriodFurnace, Result = calculateBaseResult };
 
             // Расчет теплового режима в сравнительном отчетном периоде.
-            var comparativePeriodFurnance = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == comparativePeriodId);
             var calculateComparativeResult = new Result();
 
             if (comparativePeriodFurnance != null)
