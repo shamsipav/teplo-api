@@ -24,16 +24,25 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            var furnances = await _context.Furnaces.AsNoTracking().ToListAsync();
-            if (furnances.Any())
+            var furnaces = new List<Furnace>();
+            try
             {
-                return Ok(furnances);
+                furnaces = await _context.Furnaces.AsNoTracking().ToListAsync();
+            }
+            catch(Exception ex)
+            {
+                Log.Error($"HTTP POST api/furnace GetAsync: Ошибка получения сохраненных вариантов исходных данных: {ex}");
+                return Problem($"Не удалось получить сохраненные варианты исходных данных: {ex}");
+            }
+
+            if (furnaces.Any())
+            {
+                return Ok(furnaces);
             }
 
             return NotFound("Не найдены сохраненные варианты расчета");
         }
 
-        // TODO: Try, catch (?)
         /// <summary>
         /// Получение дефолтного варианта для расчета
         /// </summary>
@@ -41,12 +50,21 @@ namespace TeploAPI.Controllers
         [HttpGet("default")]
         public IActionResult GetDefault()
         {
-            var furnace = Furnace.GetDefaultData();
+            var furnace = new Furnace();
+
+            try
+            {
+                furnace = Furnace.GetDefaultData();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"HTTP POST api/furnace GetDefault: Ошибка получения варианта исходных данных по умолчанию: {ex}");
+                return Problem($"Не удалось получить вариант исходных данных по умолчанию: {ex}");
+            }
 
             return Ok(furnace);
         }
 
-        // TODO: Try, catch на обращения к БД
         /// <summary>
         /// Удаление варианта исходных данных
         /// </summary>
@@ -57,7 +75,18 @@ namespace TeploAPI.Controllers
         {
             if (furnaceId != null)
             {
-                var furnace = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == furnaceId);
+                var furnace = new Furnace();
+
+                try
+                {
+                    furnace = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == furnaceId);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"HTTP DELETE api/furnace DeleteAsync: Ошибка получения варианта исходных данных для удаления: {ex}");
+                    return Problem($"Не удалось получить вариант исходных данных для удаления: {ex}");
+                }
+
                 if (furnace != null)
                 {
                     try
