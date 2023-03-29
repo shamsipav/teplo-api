@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TeploAPI.Data;
-using TeploAPI.Migrations;
 using TeploAPI.Models;
 using TeploAPI.Services;
 using TeploAPI.ViewModels;
@@ -25,17 +24,38 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync(FurnaceProject projectPeriodFurnaceData, int? inputDataId)
         {
-            var basePeriodFurnaceData = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == inputDataId);
+            var basePeriodFurnaceData = new Furnace();
+
+            try
+            {
+                basePeriodFurnaceData = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == inputDataId);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"HTTP POST api/project Ошибка получения набора исходных данных в базовом периоде: {ex}");
+                return Problem($"Не удалось получить набор исходных данных для базового периода: {ex}");
+            }
+
             var basePeriodFurnaceDataClear = basePeriodFurnaceData;
 
             // TODO: Добавить try, catch, log, return Error
             // Из базы
-            var cokeCoefficients = await _context.Сoefficients.FirstOrDefaultAsync(i => i.Id == 1);
-            var furnanceCapacityCoefficients = await _context.Сoefficients.FirstOrDefaultAsync(i => i.Id == 2);
+            var cokeCoefficients = new Сoefficients();
+            var furnanceCapacityCoefficients = new Сoefficients();
+
+            try
+            {
+                cokeCoefficients = await _context.Сoefficients.FirstOrDefaultAsync(i => i.Id == 1);
+                furnanceCapacityCoefficients = await _context.Сoefficients.FirstOrDefaultAsync(i => i.Id == 2);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"HTTP POST api/project Ошибка получения коэффициентов для справочника: {ex}");
+                return Problem($"Не удалось получить коэффициенты для справочника: {ex}");
+            }
 
             Reference reference = new Reference { CokeCunsumptionCoefficents = cokeCoefficients, FurnanceCapacityCoefficents = furnanceCapacityCoefficients };
 
-            // TODO: Возможно, стоит вынести инициализацию сервиса.
             CalculateService calculate = new CalculateService();
 
             var projectChangedInputData = new Furnace();
@@ -88,8 +108,6 @@ namespace TeploAPI.Controllers
             }
 
             return NotFound("Не удалось найти информацию об варианте расчета");
-
-            //ProjectCalculateModel projectResult = new ProjectCalculateModel(inputData, projectView.Project, reference);
         }
     }
 }
