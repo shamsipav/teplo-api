@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TeploAPI.Data;
@@ -11,9 +12,11 @@ using TeploAPI.Data;
 namespace TeploAPI.Migrations
 {
     [DbContext(typeof(TeploDBContext))]
-    partial class TeploDBContextModelSnapshot : ModelSnapshot
+    [Migration("20230404120600_relations-1")]
+    partial class relations1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,13 +205,15 @@ namespace TeploAPI.Migrations
                     b.Property<double>("UsefulVolumeOfFurnace")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("integer");
 
                     b.Property<double>("VolatileContentInCoke")
                         .HasColumnType("double precision");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Furnaces");
                 });
@@ -434,6 +439,15 @@ namespace TeploAPI.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TeploAPI.Models.Furnace", b =>
+                {
+                    b.HasOne("SweetAPI.Models.User", "User")
+                        .WithMany("Furnaces")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TeploAPI.Models.Reference", b =>
                 {
                     b.HasOne("TeploAPI.Models.Сoefficients", "CokeCunsumptionCoefficents")
@@ -447,6 +461,11 @@ namespace TeploAPI.Migrations
                     b.Navigation("CokeCunsumptionCoefficents");
 
                     b.Navigation("FurnanceCapacityCoefficents");
+                });
+
+            modelBuilder.Entity("SweetAPI.Models.User", b =>
+                {
+                    b.Navigation("Furnaces");
                 });
 #pragma warning restore 612, 618
         }

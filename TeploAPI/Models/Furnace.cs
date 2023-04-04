@@ -1,4 +1,6 @@
-﻿namespace TeploAPI.Models
+﻿using SweetAPI.Models;
+
+namespace TeploAPI.Models
 {
     /// <summary>
     /// Характеристики доменной печи
@@ -9,6 +11,8 @@
         /// Первичный ключ для сохранения вариантов исходных данных
         /// </summary>
         public int Id { get; set; }
+
+        public int UserId { get; set; }
 
         /// <summary>
         /// Номер доменной печи

@@ -1,8 +1,11 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using SweetAPI.Models;
+using SweetAPI.Utils;
 using TeploAPI.Data;
 using TeploAPI.Models;
 using TeploAPI.Services;
@@ -10,6 +13,7 @@ using TeploAPI.ViewModels;
 
 namespace TeploAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class BaseController : Controller
@@ -37,10 +41,31 @@ namespace TeploAPI.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Errors[0].ErrorMessage);
 
+            // TODO: Вынести в отдельный сервис код ниже отсюда (а также отрефакторить весь код с проверками на null):
+            // TODO: А ЕЩЕ ЛУЧШЕ БУДЕТ В ТОКЕН ВШИТЬ ИДЕНТИФИКАТОР ПОЛЬЗОВАТЕЛЯ (а может и нет)
+            var headers = Request.Headers;
+            headers.TryGetValue("Authorization", out var authHeader);
+            string token = authHeader.ToString().Split(' ').Skip(1).FirstOrDefault();
+
+            string email = Validate.ValidateToken(token);
+
+            var existUser = new User();
+
+            if (email != null)
+            {
+                existUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email.ToLower());
+                if (existUser is null)
+                    return NotFound("Пользователь с таким Email не найден");
+            }
+            else
+                return BadRequest("Некорректный токен");
+            // до сюда.
+
             if (save)
             {
                 try
                 {
+                    furnace.UserId = existUser.Id;
                     furnace.SaveDate = DateTime.Now;
                     _context.Furnaces.Add(furnace);
                     await _context.SaveChangesAsync();

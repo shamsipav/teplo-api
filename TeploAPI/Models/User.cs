@@ -1,4 +1,5 @@
 ﻿using System;
+using TeploAPI.Models;
 
 namespace SweetAPI.Models
 {

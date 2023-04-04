@@ -21,13 +21,13 @@ namespace TeploAPI.Controllers
         /// Получение всех сохранненых вариантов исходных данных
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetAsync(int? userId)
         {
             var furnaces = new List<Furnace>();
             try
             {
-                furnaces = await _context.Furnaces.AsNoTracking().ToListAsync();
+                furnaces = await _context.Furnaces.AsNoTracking().Where(f => f.UserId == userId).ToListAsync();
             }
             catch(Exception ex)
             {
