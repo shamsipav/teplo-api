@@ -122,25 +122,25 @@ namespace TeploAPI.Controllers
         /// <summary>
         /// Получение определенного материала
         /// </summary>
-        /// <param name="materialId"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        [HttpGet("id")]
-        public async Task<IActionResult> GetByIdAsync(int? materialId)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetByIdAsync(int? id)
         {
             var material = new Material();
             try
             {
-                material = await _context.Materials.AsNoTracking().FirstOrDefaultAsync(m => m.Id == materialId);
+                material = await _context.Materials.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
             }
             catch (Exception ex)
             {
-                Log.Error($"HTTP GET api/material GetByIdAsync: Ошибка получения материала с идентификатором id = '{materialId}: {ex}");
-                return Problem($"Не удалось получить материал с идентификатором id = '{materialId}': {ex}");
+                Log.Error($"HTTP GET api/material GetByIdAsync: Ошибка получения материала с идентификатором id = '{id}: {ex}");
+                return Problem($"Не удалось получить материал с идентификатором id = '{id}': {ex}");
             }
 
             if (material == null)
             {
-                return NotFound($"Не удалось найти информацию о материале с идентификатором id = '{materialId}'");
+                return NotFound($"Не удалось найти информацию о материале с идентификатором id = '{id}'");
             }
 
             return Ok(material);
@@ -149,18 +149,18 @@ namespace TeploAPI.Controllers
         /// <summary>
         /// Удаление материала из справочника
         /// </summary>
-        /// <param name="materialId"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        [HttpDelete]
-        public async Task<IActionResult> DeleteAsync(int? materialId)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(int? id)
         {
-            if (materialId != null)
+            if (id != null)
             {
                 var material = new Material();
 
                 try
                 {
-                    material = await _context.Materials.FirstOrDefaultAsync(d => d.Id == materialId);
+                    material = await _context.Materials.FirstOrDefaultAsync(d => d.Id == id);
                 }
                 catch (Exception ex)
                 {
@@ -178,16 +178,16 @@ namespace TeploAPI.Controllers
                     catch (Exception ex)
                     {
                         Log.Error($"HTTP DELETE api/material DeleteAsync: Ошибка удаления материала: {ex}");
-                        return Problem($"Не удалось удалить материал с идентификатором id = '{materialId}': {ex}");
+                        return Problem($"Не удалось удалить материал с идентификатором id = '{id}': {ex}");
                     }
 
                     return Ok(material);
                 }
 
-                return NotFound($"Не удалось найти информацию о материале с идентификатором id = '{materialId}'");
+                return NotFound($"Не удалось найти информацию о материале с идентификатором id = '{id}'");
             }
 
-            return NotFound($"Не удалось найти информацию о материале с идентификатором id = '{materialId}'");
+            return NotFound($"Не удалось найти информацию о материале с идентификатором id = '{id}'");
         }
     }
 }
