@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SweetAPI.Models;
 using TeploAPI.Models;
 
 namespace TeploAPI.Data
 {
     public class TeploDBContext : DbContext
     {
+        public DbSet<User> Users { get; set; }
         public DbSet<Furnace> Furnaces { get; set; }
         public DbSet<Сoefficients> Сoefficients { get; set; }
         public DbSet<Reference> References { get; set; }
