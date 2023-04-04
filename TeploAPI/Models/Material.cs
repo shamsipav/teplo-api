@@ -13,16 +13,6 @@
         public string? Name { get; set; }
 
         /// <summary>
-        /// Расход, кг/т чугуна
-        /// </summary>
-        public double Coal { get; set; }
-
-        /// <summary>
-        /// Доля
-        /// </summary>
-        public double Share { get; set; }
-
-        /// <summary>
         /// Содержание влаги, %
         /// </summary>
         public double Moisture { get; set; }

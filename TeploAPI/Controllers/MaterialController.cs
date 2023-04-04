@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -11,10 +12,12 @@ namespace TeploAPI.Controllers
     [Route("api/[controller]")]
     public class MaterialController : Controller
     {
+        private IValidator<Material> _validator;
         private TeploDBContext _context;
-        public MaterialController(TeploDBContext context)
+        public MaterialController(TeploDBContext context, IValidator<Material> validator)
         {
             _context = context;
+            _validator = validator;
         }
 
         /// <summary>
@@ -46,11 +49,18 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(Material material)
         {
-            // Добавить fluentValidation.
+            if (material == null)
+                return BadRequest("Отсутсвуют значения для добавления материала в справочник");
+
+            ValidationResult validationResult = await _validator.ValidateAsync(material);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors[0].ErrorMessage);
 
             try
             {
                 material.BaseOne = material.CaO / material.SiO2;
+
                 await _context.Materials.AddAsync(material);
                 await _context.SaveChangesAsync();
             }
@@ -71,6 +81,14 @@ namespace TeploAPI.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateByIdAsync(Material material)
         {
+            if (material == null)
+                return BadRequest("Отсутсвуют значения для обновления материала в справочнике");
+
+            ValidationResult validationResult = await _validator.ValidateAsync(material);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors[0].ErrorMessage);
+
             var existMaterial = new Material();
             try
             {

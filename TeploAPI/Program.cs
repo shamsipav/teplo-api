@@ -20,6 +20,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IValidator<Furnace>, FurnaceValidator>();
+builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();
 
 var app = builder.Build();
 
