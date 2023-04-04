@@ -35,12 +35,6 @@ namespace TeploAPI.Controllers
                 return Problem($"Не удалось получить сохраненные варианты исходных данных: {ex}");
             }
 
-            //if (furnaces.Any())
-            //{
-            //    return Ok(furnaces);
-            //}
-
-            //return NotFound(furnaces);
             return Ok(furnaces);
         }
 
@@ -98,16 +92,16 @@ namespace TeploAPI.Controllers
                     catch (Exception ex)
                     {
                         Log.Error($"HTTP DELETE api/furnace DeleteAsync: Ошибка удаления варианта исходных данных: {ex}");
-                        return Problem($"Не удалось удалить вариант исходных данных: {ex}");
+                        return Problem($"Не удалось удалить вариант исходных данных с идентификатором id = '{furnaceId}': {ex}");
                     }
 
                     return Ok(furnace);
                 }
 
-                return NotFound("Не удалось найти информацию об варианте расчета");
+                return NotFound($"Не удалось найти информацию об варианте расчета с идентификатором id = '{furnaceId}'");
             }
 
-            return NotFound("Не удалось найти информацию об варианте расчета");
+            return NotFound($"Не удалось найти информацию об варианте расчета с идентификатором id = '{furnaceId}'");
         }
     }
 }

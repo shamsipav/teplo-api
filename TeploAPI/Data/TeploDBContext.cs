@@ -8,6 +8,7 @@ namespace TeploAPI.Data
         public DbSet<Furnace> Furnaces { get; set; }
         public DbSet<Сoefficients> Сoefficients { get; set; }
         public DbSet<Reference> References { get; set; }
+        public DbSet<Material> Materials { get; set; }
 
         public TeploDBContext(DbContextOptions<TeploDBContext> options) : base(options) 
         {
