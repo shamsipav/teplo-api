@@ -27,7 +27,7 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> GetAsync(int? userId)
         {
             if (userId == null)
-                return BadRequest("Не указан идентификатор пользователя");
+                return BadRequest(new Response { ErrorMessage = "Не указан идентификатор пользователя" });
 
             var furnaces = new List<Furnace>();
             try
@@ -37,10 +37,10 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP POST api/furnace GetAsync: Ошибка получения сохраненных вариантов исходных данных: {ex}");
-                return Problem($"Не удалось получить сохраненные варианты исходных данных: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить сохраненные варианты исходных данных" });
             }
 
-            return Ok(furnaces);
+            return Ok(new Response { IsSuccess = true, Result = furnaces });
         }
 
         /// <summary>
@@ -59,10 +59,10 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP POST api/furnace GetDefault: Ошибка получения варианта исходных данных по умолчанию: {ex}");
-                return Problem($"Не удалось получить вариант исходных данных по умолчанию: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить вариант исходных данных по умолчанию" });
             }
 
-            return Ok(furnace);
+            return Ok(new Response { IsSuccess = true, Result = furnace });
         }
 
         // TODO: Привязать к пользователю.
@@ -86,7 +86,7 @@ namespace TeploAPI.Controllers
                 catch (Exception ex)
                 {
                     Log.Error($"HTTP DELETE api/furnace DeleteAsync: Ошибка получения варианта исходных данных для удаления: {ex}");
-                    return Problem($"Не удалось получить вариант исходных данных для удаления: {ex}");
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить вариант исходных данных для удаления" });
                 }
 
                 if (furnace != null)
@@ -99,16 +99,16 @@ namespace TeploAPI.Controllers
                     catch (Exception ex)
                     {
                         Log.Error($"HTTP DELETE api/furnace DeleteAsync: Ошибка удаления варианта исходных данных: {ex}");
-                        return Problem($"Не удалось удалить вариант исходных данных с идентификатором id = '{furnaceId}': {ex}");
+                        return StatusCode(500, new Response { ErrorMessage = $"Не удалось удалить вариант исходных данных с идентификатором id = '{furnaceId}'" });
                     }
 
-                    return Ok(furnace);
+                    return Ok(new Response { IsSuccess = true, Result = furnace });
                 }
 
-                return NotFound($"Не удалось найти информацию об варианте расчета с идентификатором id = '{furnaceId}'");
+                return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию об варианте расчета с идентификатором id = '{furnaceId}'" });
             }
 
-            return NotFound($"Не удалось найти информацию об варианте расчета с идентификатором id = '{furnaceId}'");
+            return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию об варианте расчета с идентификатором id = '{furnaceId}'" });
         }
     }
 }
