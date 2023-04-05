@@ -12,7 +12,14 @@ namespace TeploAPI.Models
         /// </summary>
         public int Id { get; set; }
 
+        // TODO: Возможно, стоит реализовать более корректную связь, чтобы
+        // другой пользователь не мог получить варианты исходных данных у данного пользователя.
         public int UserId { get; set; }
+
+        /// <summary>
+        /// Название исходных данных для доменной печи
+        /// </summary>
+        public string? Name { get; set; }
 
         /// <summary>
         /// Номер доменной печи

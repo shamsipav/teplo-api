@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -21,15 +22,19 @@ namespace TeploAPI.Controllers
         /// Получение всех сохранненых вариантов исходных данных
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetAsync(int? userId)
         {
+            if (userId == null)
+                return BadRequest("Не указан идентификатор пользователя");
+
             var furnaces = new List<Furnace>();
             try
             {
                 furnaces = await _context.Furnaces.AsNoTracking().Where(f => f.UserId == userId).ToListAsync();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error($"HTTP POST api/furnace GetAsync: Ошибка получения сохраненных вариантов исходных данных: {ex}");
                 return Problem($"Не удалось получить сохраненные варианты исходных данных: {ex}");
@@ -60,12 +65,14 @@ namespace TeploAPI.Controllers
             return Ok(furnace);
         }
 
+        // TODO: Привязать к пользователю.
         /// <summary>
         /// Удаление варианта исходных данных
         /// </summary>
         /// <param name="furnaceId"></param>
         /// <returns></returns>
-        [HttpDelete]
+        [Authorize]
+        [HttpDelete("{furnaceId}")]
         public async Task<IActionResult> DeleteAsync(int? furnaceId)
         {
             if (furnaceId != null)

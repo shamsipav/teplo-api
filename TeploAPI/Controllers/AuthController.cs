@@ -80,6 +80,7 @@ namespace TeploAPI.Controllers
             return Ok("Пользователь успешно зарегистрирован");
         }
 
+        // TODO: Добавить try/catch в обращения к БД
         /// <summary>
         /// Вход в аккаунт
         /// </summary>
@@ -105,6 +106,9 @@ namespace TeploAPI.Controllers
 
             bool passwordComparison = BCrypt.Net.BCrypt.Verify(password, existUser.Password);
             if (!passwordComparison) return BadRequest("Неверный пароль");
+
+            existUser.LastLoginDate = DateTime.Now;
+            _context.SaveChanges();
 
             var claims = new List<Claim> { new Claim("email", email) };
 

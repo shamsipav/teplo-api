@@ -13,17 +13,18 @@ using TeploAPI.ViewModels;
 
 namespace TeploAPI.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class BaseController : Controller
     {
+        private FurnaceService _furnaceService;
         private IValidator<Furnace> _validator;
         private TeploDBContext _context;
-        public BaseController(TeploDBContext context, IValidator<Furnace> validator)
+        public BaseController(TeploDBContext context, IValidator<Furnace> validator, FurnaceService furnaceService)
         {
             _context = context;
             _validator = validator;
+            _furnaceService = furnaceService;
         }
 
         // TODO: Добавить названия для сохраненных вариантов исходных данных.
@@ -41,40 +42,39 @@ namespace TeploAPI.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Errors[0].ErrorMessage);
 
-            // TODO: Вынести в отдельный сервис код ниже отсюда (а также отрефакторить весь код с проверками на null):
-            // TODO: А ЕЩЕ ЛУЧШЕ БУДЕТ В ТОКЕН ВШИТЬ ИДЕНТИФИКАТОР ПОЛЬЗОВАТЕЛЯ (а может и нет)
-            var headers = Request.Headers;
-            headers.TryGetValue("Authorization", out var authHeader);
-            string token = authHeader.ToString().Split(' ').Skip(1).FirstOrDefault();
-
-            string email = Validate.ValidateToken(token);
-
-            var existUser = new User();
-
-            if (email != null)
+            // TODO: Вынести логику сохранения вариантов в отдельный сервис.
+            if (furnace.Id > 0)
             {
-                existUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email.ToLower());
-                if (existUser is null)
-                    return NotFound("Пользователь с таким Email не найден");
+                var updatedFurnaceId = await _furnaceService.UpdateFurnaceAsync(furnace);
+                if (updatedFurnaceId == 0)
+                    return Problem($"Не удалось обновить сохраненный вариант исходных данных с идентификатором id = '{furnace.Id}'");
             }
-            else
-                return BadRequest("Некорректный токен");
-            // до сюда.
 
-            if (save)
+            if (save && furnace.Id == 0)
             {
-                try
+                // TODO: Вынести в отдельный сервис код ниже отсюда (а также отрефакторить весь код с проверками на null):
+                // TODO: А ЕЩЕ ЛУЧШЕ БУДЕТ В ТОКЕН ВШИТЬ ИДЕНТИФИКАТОР ПОЛЬЗОВАТЕЛЯ (а может и нет).
+                var headers = Request.Headers;
+                headers.TryGetValue("Authorization", out var authHeader);
+                string token = authHeader.ToString().Split(' ').Skip(1).FirstOrDefault();
+
+                string email = Validate.ValidateToken(token);
+
+                var existUser = new User();
+
+                if (email != null)
                 {
-                    furnace.UserId = existUser.Id;
-                    furnace.SaveDate = DateTime.Now;
-                    _context.Furnaces.Add(furnace);
-                    await _context.SaveChangesAsync();
+                    existUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email.ToLower());
+                    if (existUser is null)
+                        return NotFound("Пользователь с таким Email не найден");
                 }
-                catch(Exception ex)
-                {
-                    Log.Error($"HTTP POST api/base PostAsync: Ошибка сохранения варианта исходных данных: {ex}");
-                    return Problem($"Не удалось сохранить вариант исходных данных: {ex}");
-                }
+                else
+                    return BadRequest("Некорректный токен");
+                // до сюда.
+
+                var savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnace, existUser.Id);
+                if (savedFurnaceId == 0)
+                    return Problem($"Не удалось сохранить новый вариант исходных данных");
             }
 
             // TODO: Возможно, стоит вынести инициализацию сервиса.
@@ -90,7 +90,7 @@ namespace TeploAPI.Controllers
             {
                 Log.Error($"HTTP POST api/base Ошибка выполнения расчета: {ex}");
                 return Problem($"Не удалось выполнить расчет в базовом периоде: {ex}");
-            }             
+            }
 
             var result = new ResultViewModel { Input = furnace, Result = calculateResult };
 
@@ -103,6 +103,7 @@ namespace TeploAPI.Controllers
         /// <param name="basePeriodId">Идентификатор базового периода</param>
         /// <param name="comparativePeriodId">Идентификатор сравнительного периода</param>
         /// <returns></returns>
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> ComparisonAsync(int basePeriodId, int comparativePeriodId)
         {
@@ -126,12 +127,12 @@ namespace TeploAPI.Controllers
                 basePeriodFurnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == basePeriodId);
                 comparativePeriodFurnance = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == comparativePeriodId);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error($"HTTP POST api/base ComparisonAsync: Ошибка получения наборов исходных данных для двух периодов: {ex}");
                 return Problem($"Не удалось получить наборы исходных данных для двух периодов: {ex}");
             }
-            
+
             // Расчет теплового режима в базовом отчетном периоде.
             var calculateBaseResult = new Result();
 
@@ -146,7 +147,7 @@ namespace TeploAPI.Controllers
                     Log.Error($"HTTP POST api/base ComparisonAsync: Ошибка выполнения расчета: {ex}");
                     return Problem($"Не удалось выполнить расчет в базовом периоде: {ex}");
                 }
-            } 
+            }
             else
             {
                 return NotFound("Вариант исходных данных для базового периода не был найден");
