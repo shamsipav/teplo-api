@@ -6,10 +6,13 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using SweetAPI.Models;
 using SweetAPI.Models.Validators;
+using System;
 using TeploAPI.Data;
+using TeploAPI.Interfaces;
 using TeploAPI.Middlewares;
 using TeploAPI.Models;
 using TeploAPI.Models.Validators;
+using TeploAPI.Services;
 using TeploAPI.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -79,6 +82,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddScoped<IFurnaceService, FurnaceService>();
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
 builder.Services.AddScoped<IValidator<Furnace>, FurnaceValidator>();
 builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();

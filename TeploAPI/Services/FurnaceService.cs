@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TeploAPI.Data;
-using TeploAPI.Migrations;
+using TeploAPI.Interfaces;
 using TeploAPI.Models;
 
 namespace TeploAPI.Services
 {
-    public class FurnaceService
+    public class FurnaceService : IFurnaceService
     {
         private TeploDBContext _context;
         public FurnaceService(TeploDBContext context)
@@ -19,7 +19,7 @@ namespace TeploAPI.Services
         /// </summary>
         /// <param name="furnace"></param>
         /// <returns></returns>
-        internal async Task<int> UpdateFurnaceAsync(Furnace furnace)
+        public async Task<int> UpdateFurnaceAsync(Furnace furnace)
         {
             if (furnace != null)
             {
@@ -82,7 +82,7 @@ namespace TeploAPI.Services
 
                         await _context.SaveChangesAsync();
 
-                        return existFurnace.Id;
+                        return 1;
                     }
 
                     return 0;
@@ -102,7 +102,7 @@ namespace TeploAPI.Services
         /// </summary>
         /// <param name="furnace"></param>
         /// <returns></returns>
-        internal async Task<int> SaveFurnaceAsync(Furnace furnace, int userId)
+        public async Task<int> SaveFurnaceAsync(Furnace furnace, int userId)
         {
             if (furnace != null)
             {
