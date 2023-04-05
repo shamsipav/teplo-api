@@ -108,10 +108,13 @@ namespace TeploAPI.Services
             {
                 try
                 {
+                    furnace.Id = 0;
                     furnace.UserId = userId;
                     furnace.SaveDate = DateTime.Now;
                     _context.Furnaces.Add(furnace);
                     await _context.SaveChangesAsync();
+
+                    return 1;
                 }
                 catch (Exception ex)
                 {

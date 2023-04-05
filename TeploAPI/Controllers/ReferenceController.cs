@@ -36,12 +36,12 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP PUT api/reference GetAsync: Ошибка получения коэффициентов для справочника: {ex}");
-                return Problem($"Не удалось получить коэффициенты для справочника: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить коэффициенты для справочника" });
             }
 
             ReferenceDTO reference = new ReferenceDTO{ CokeCunsumptionCoefficents = cokeCoefficients, FurnanceCapacityCoefficents = furnanceCapacityCoefficients };
 
-            return Ok(reference);
+            return Ok(new Response { IsSuccess = true, Result = reference });
         }
 
         // TODO: Проверить, действительно ли нужно использовать ReferenceDTO,
@@ -62,7 +62,7 @@ namespace TeploAPI.Controllers
                 catch (Exception ex)
                 {
                     Log.Error($"HTTP PUT api/reference PutAsync: Ошибка получения коэффициентов для справочника: {ex}");
-                    return Problem($"Не удалось получить коэффициенты для справочника: {ex}");
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить коэффициенты для справочника" });
                 }
 
                 if (cokeCofficients != null && furnanceCapacityCoefficients != null)
@@ -111,7 +111,7 @@ namespace TeploAPI.Controllers
                 }
                 else
                 {
-                    return NotFound("Не найдены данные в справочнике корректировочных коэффициентов");
+                    return NotFound(new Response { ErrorMessage = "Не найдены данные в справочнике корректировочных коэффициентов" });
                 }
 
                 try
@@ -123,15 +123,15 @@ namespace TeploAPI.Controllers
                 catch(Exception ex)
                 {
                     Log.Error($"HTTP PUT api/reference PutAsync: Ошибка обновления справочника корректировочных коэффициентов: {ex}");
-                    return Problem($"Не удалось обновить справочник корректировочных коэффициентов: {ex}");
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить справочник корректировочных коэффициентов" });
                 }
             }
             else
             {
-                return BadRequest("Необходимо указать значения для обновления справочника корректировочных коэффициентов");
+                return BadRequest(new Response { ErrorMessage = "Необходимо указать значения для обновления справочника корректировочных коэффициентов" });
             }
 
-            return Ok(reference);
+            return Ok(new Response { IsSuccess = true, Result = reference });
         }
     }
 }

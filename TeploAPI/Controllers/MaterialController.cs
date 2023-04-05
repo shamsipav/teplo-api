@@ -35,10 +35,10 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP GET api/material GetAsync: Ошибка получения значений справочника шихтовых материалов: {ex}");
-                return Problem($"Не удалось получить значения справочника шихтовых материалов: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить значения справочника шихтовых материалов" });
             }
 
-            return Ok(materials);
+            return Ok(new Response { IsSuccess = true, Result = materials });
         }
 
         /// <summary>
@@ -50,12 +50,12 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> CreateAsync(Material material)
         {
             if (material == null)
-                return BadRequest("Отсутсвуют значения для добавления материала в справочник");
+                return BadRequest(new Response { ErrorMessage = "Отсутсвуют значения для добавления материала в справочник" });
 
             ValidationResult validationResult = await _validator.ValidateAsync(material);
 
             if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors[0].ErrorMessage);
+                return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
             try
             {
@@ -67,10 +67,10 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP POST api/material CreateAsync: Ошибка добавления материала: {ex}");
-                return Problem($"Не удалось добавить материал в справочник: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось добавить материал в справочник" });
             }
 
-            return Ok(material);
+            return Ok(new Response { IsSuccess = true, SuccessMessage = $"Материал '{material.Name}' успешно создан", Result = material });
         }
 
         /// <summary>
@@ -82,12 +82,12 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> UpdateByIdAsync(Material material)
         {
             if (material == null)
-                return BadRequest("Отсутсвуют значения для обновления материала в справочнике");
+                return BadRequest(new Response { ErrorMessage = "Отсутсвуют значения для обновления материала в справочнике" });
 
             ValidationResult validationResult = await _validator.ValidateAsync(material);
 
             if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors[0].ErrorMessage);
+                return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
             var existMaterial = new Material();
             try
@@ -97,12 +97,12 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP GET api/material UpdateByIdAsync: Ошибка получения материала с идентификатором id = '{material.Id}: {ex}");
-                return Problem($"Не удалось получить материал с идентификатором id = '{material.Id}': {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить материал с идентификатором id = '{material.Id}'" });
             }
 
             if (existMaterial == null)
             {
-                return NotFound($"Не удалось найти информацию о материале с идентификатором id = '{material.Id}'");
+                return NotFound(StatusCode(500, new Response { ErrorMessage = $"Не удалось найти информацию о материале с идентификатором id = '{material.Id}'" }));
             }
 
             try
@@ -131,10 +131,10 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP GET api/material UpdateByIdAsync: Ошибка обновления материала с идентификатором id = '{material.Id}: {ex}");
-                return Problem($"Не удалось обновить материал с идентификатором id = '{material.Id}': {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить материал с идентификатором id = '{material.Id}'" });
             }
 
-            return Ok(existMaterial);
+            return Ok(new Response { IsSuccess = true, SuccessMessage = "Изменения успешно применены", Result = existMaterial });
         }
 
         /// <summary>
@@ -153,15 +153,15 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP GET api/material GetByIdAsync: Ошибка получения материала с идентификатором id = '{id}: {ex}");
-                return Problem($"Не удалось получить материал с идентификатором id = '{id}': {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить материал с идентификатором id = '{id}'" });
             }
 
             if (material == null)
             {
-                return NotFound($"Не удалось найти информацию о материале с идентификатором id = '{id}'");
+                return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о материале с идентификатором id = '{id}'" });
             }
 
-            return Ok(material);
+            return Ok(new Response { IsSuccess = true, Result = material });
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace TeploAPI.Controllers
                 catch (Exception ex)
                 {
                     Log.Error($"HTTP DELETE api/material DeleteAsync: Ошибка получения материала для удаления: {ex}");
-                    return Problem($"Не удалось получить материал для удаления: {ex}");
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить материал для удаления: {ex}" });
                 }
 
                 if (material != null)
@@ -196,16 +196,16 @@ namespace TeploAPI.Controllers
                     catch (Exception ex)
                     {
                         Log.Error($"HTTP DELETE api/material DeleteAsync: Ошибка удаления материала: {ex}");
-                        return Problem($"Не удалось удалить материал с идентификатором id = '{id}': {ex}");
+                        return StatusCode(500, new Response { ErrorMessage = $"Не удалось удалить материал с идентификатором id = '{id}'" });
                     }
 
-                    return Ok(material);
+                    return Ok(new Response { IsSuccess = true, SuccessMessage = $"Материал '{material.Name}' успешно удален", Result = material });
                 }
 
-                return NotFound($"Не удалось найти информацию о материале с идентификатором id = '{id}'");
+                return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о материале с идентификатором id = '{id}'" });
             }
 
-            return NotFound($"Не удалось найти информацию о материале с идентификатором id = '{id}'");
+            return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о материале с идентификатором id = '{id}'" });
         }
     }
 }

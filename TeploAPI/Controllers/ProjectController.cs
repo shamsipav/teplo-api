@@ -37,7 +37,7 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP POST api/project Ошибка получения набора исходных данных в базовом периоде: {ex}");
-                return Problem($"Не удалось получить набор исходных данных для базового периода: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить набор исходных данных для базового периода" });
             }
 
             // TODO: Добавить try, catch, log, return Error
@@ -53,7 +53,7 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP POST api/project Ошибка получения коэффициентов для справочника: {ex}");
-                return Problem($"Не удалось получить коэффициенты для справочника: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить коэффициенты для справочника" });
             }
 
             Reference reference = new Reference { CokeCunsumptionCoefficents = cokeCoefficients, FurnanceCapacityCoefficents = furnanceCapacityCoefficients };
@@ -71,7 +71,7 @@ namespace TeploAPI.Controllers
                 catch (Exception ex)
                 {
                     Log.Error($"HTTP POST api/project Ошибка выполнения корректировки исходных данных в проектном периоде: {ex}");
-                    return Problem($"Не удалось выполнить корректировку исходных данных в проектном периоде: {ex}");
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось выполнить корректировку исходных данных в проектном периоде" });
                 }
 
                 basePeriodFurnaceData.BlastTemperature = projectChangedInputData.ProjectInputData.BlastTemperature;
@@ -101,7 +101,7 @@ namespace TeploAPI.Controllers
                 catch (Exception ex)
                 {
                     Log.Error($"HTTP POST api/project Ошибка выполнения расчета в проектном периоде: {ex}");
-                    return Problem($"Не удалось выполнить расчет в базовом периоде: {ex}");
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось выполнить расчет в базовом периоде" });
                 }
 
                 var baseResult = new ResultViewModel { Input = basePeriodFurnaceDataClear, Result = baseResultData };
@@ -109,10 +109,10 @@ namespace TeploAPI.Controllers
 
                 var result = new UnionResultViewModel { BaseResult = baseResult, ComparativeResult = projectResult };
 
-                return Ok(result);
+                return Ok(new Response { IsSuccess = true, Result = result });
             }
 
-            return NotFound("Не удалось найти информацию об варианте расчета");
+            return NotFound(new Response { ErrorMessage = "Не удалось найти информацию об варианте расчета" });
         }
     }
 }

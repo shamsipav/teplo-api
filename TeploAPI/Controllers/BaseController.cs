@@ -44,14 +44,14 @@ namespace TeploAPI.Controllers
                 return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
             // TODO: Вынести логику сохранения вариантов в отдельный сервис.
-            if (furnace.Id > 0)
+            if (save == false && furnace.Id > 0)
             {
                 var updatedFurnaceId = await _furnaceService.UpdateFurnaceAsync(furnace);
                 if (updatedFurnaceId == 0)
                     return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить сохраненный вариант исходных данных с идентификатором id = '{furnace.Id}'" });
             }
 
-            if (save && furnace.Id == 0)
+            if (save)
             {
                 // TODO: Вынести в отдельный сервис код ниже отсюда (а также отрефакторить весь код с проверками на null):
                 // TODO: А ЕЩЕ ЛУЧШЕ БУДЕТ В ТОКЕН ВШИТЬ ИДЕНТИФИКАТОР ПОЛЬЗОВАТЕЛЯ (а может и нет).
