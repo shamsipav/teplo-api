@@ -9,6 +9,7 @@ using SweetAPI.Utils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using TeploAPI.Data;
+using TeploAPI.Models;
 using TeploAPI.Utils;
 
 namespace TeploAPI.Controllers
@@ -52,10 +53,11 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"POST api/auth/signup, ошибка получения существующего пользователя: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = "Не удалось проверить существование пользователя" });
             }
 
             if (existUser != null)
-                return BadRequest("Пользователь с таким Email уже зарегистрирован");
+                return BadRequest(new Response { ErrorMessage = "Пользователь с таким Email уже зарегистрирован" });
 
             user.Email = user.Email.ToLower();
 
@@ -73,11 +75,10 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"Возникло исключение при регистрации пользователя {ex}");
-                // TODO: Implement this for Response class
-                return Problem("Возникла ошибка при регистрации пользователя");
+                return StatusCode(500, new Response { ErrorMessage = "Возникла ошибка при регистрации пользователя" });
             }
 
-            return Ok("Пользователь успешно зарегистрирован");
+            return Ok(new Response { IsSuccess = true, SuccessMessage = "Пользователь успешно зарегистрирован" });
         }
 
         // TODO: Добавить try/catch в обращения к БД
@@ -95,17 +96,17 @@ namespace TeploAPI.Controllers
             var password = login.Password;
 
             if (email == null)
-                return BadRequest("Email яляется обязательным полем");
+                return BadRequest(new Response { ErrorMessage = "Email яляется обязательным полем" });
 
             if (password == null)
-                return BadRequest("Password яляется обязательным полем");
+                return BadRequest(new Response { ErrorMessage = "Password яляется обязательным полем" });
 
             var existUser = _context.Users.FirstOrDefault(u => u.Email == email.ToLower());
             if (existUser is null)
-                return NotFound("Пользователь с таким Email не найден");
+                return NotFound(new Response { ErrorMessage = "Пользователь с таким Email не найден" });
 
             bool passwordComparison = BCrypt.Net.BCrypt.Verify(password, existUser.Password);
-            if (!passwordComparison) return BadRequest("Неверный пароль");
+            if (!passwordComparison) return BadRequest(new Response { ErrorMessage = "Неверный пароль" });
 
             existUser.LastLoginDate = DateTime.Now;
             _context.SaveChanges();
@@ -124,7 +125,7 @@ namespace TeploAPI.Controllers
 
             var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            return Ok(encodedJwt);
+            return Ok(new Response { IsSuccess = true, SuccessMessage = "Вход в аккаунт выполнен", Result = encodedJwt });
         }
 
         /// <summary>
@@ -149,20 +150,20 @@ namespace TeploAPI.Controllers
             {
                 existUser = _context.Users.FirstOrDefault(u => u.Email == email.ToLower());
                 if (existUser is null)
-                    return NotFound("Пользователь с таким Email не найден");
+                    return NotFound(new Response { ErrorMessage = "Пользователь с таким Email не найден" });
             }
             else
-                return BadRequest("Некорректный токен");
+                return BadRequest(new Response { ErrorMessage = "Некорректный токен" });
 
-            return Ok(new UserDTO
-            {
-                Id = existUser.Id,
-                FirstName = existUser.FirstName,
-                LastName = existUser.LastName,
-                Email = existUser.Email,
-                LastLoginDate = existUser.LastLoginDate,
-                LastLoginIP = existUser.LastLoginIp
-            });
+            return Ok(new Response { IsSuccess = true, 
+                Result = new UserDTO {
+                    Id = existUser.Id,
+                    FirstName = existUser.FirstName,
+                    LastName = existUser.LastName,
+                    Email = existUser.Email,
+                    LastLoginDate = existUser.LastLoginDate,
+                    LastLoginIP = existUser.LastLoginIp
+             }});
         }
     }
 }
