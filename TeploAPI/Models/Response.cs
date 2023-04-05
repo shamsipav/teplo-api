@@ -2,12 +2,14 @@
 {
     public class Response
     {
-        public bool IsSuccess { get; set; }
+        public bool IsSuccess { get; set; } = false;
 
         public string? ErrorMessage { get; set; }
 
-        public int StatusCode { get; set; }
+        public int Status { get; set; }
 
-        public string? Result { get; set; }
+        public string? SuccessMessage { get; set; }
+
+        public object? Result { get; set; }
     }
 }

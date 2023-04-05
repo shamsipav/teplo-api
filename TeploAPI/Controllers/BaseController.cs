@@ -41,14 +41,14 @@ namespace TeploAPI.Controllers
             ValidationResult validationResult = await _validator.ValidateAsync(furnace);
 
             if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors[0].ErrorMessage);
+                return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
             // TODO: Вынести логику сохранения вариантов в отдельный сервис.
             if (furnace.Id > 0)
             {
                 var updatedFurnaceId = await _furnaceService.UpdateFurnaceAsync(furnace);
                 if (updatedFurnaceId == 0)
-                    return Problem($"Не удалось обновить сохраненный вариант исходных данных с идентификатором id = '{furnace.Id}'");
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить сохраненный вариант исходных данных с идентификатором id = '{furnace.Id}'" });
             }
 
             if (save && furnace.Id == 0)
@@ -67,15 +67,15 @@ namespace TeploAPI.Controllers
                 {
                     existUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email.ToLower());
                     if (existUser is null)
-                        return NotFound("Пользователь с таким Email не найден");
+                        return NotFound(new Response { ErrorMessage = "Пользователь с таким Email не найден" });
                 }
                 else
-                    return BadRequest("Некорректный токен");
+                    return BadRequest(new Response { ErrorMessage = "Некорректный токен" });
                 // до сюда.
 
                 var savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnace, existUser.Id);
                 if (savedFurnaceId == 0)
-                    return Problem($"Не удалось сохранить новый вариант исходных данных");
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось сохранить новый вариант исходных данных" });
             }
 
             // TODO: Возможно, стоит вынести инициализацию сервиса.
@@ -90,12 +90,12 @@ namespace TeploAPI.Controllers
             catch (Exception ex)
             {
                 Log.Error($"HTTP POST api/base Ошибка выполнения расчета: {ex}");
-                return Problem($"Не удалось выполнить расчет в базовом периоде: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось выполнить расчет в базовом периоде: {ex}" });
             }
 
             var result = new ResultViewModel { Input = furnace, Result = calculateResult };
 
-            return Ok(result);
+            return Ok(new Response { Result = result });
         }
     }
 }
