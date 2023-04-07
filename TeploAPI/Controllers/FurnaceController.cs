@@ -23,16 +23,17 @@ namespace TeploAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [Authorize]
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetAsync(int? userId)
+        [HttpGet]
+        public async Task<IActionResult> GetAsync()
         {
-            if (userId == null)
-                return BadRequest(new Response { ErrorMessage = "Не указан идентификатор пользователя" });
+            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
+            if (uid == 0)
+                return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
             var furnaces = new List<Furnace>();
             try
             {
-                furnaces = await _context.Furnaces.AsNoTracking().Where(f => f.UserId == userId).ToListAsync();
+                furnaces = await _context.Furnaces.AsNoTracking().Where(f => f.UserId == uid).ToListAsync();
             }
             catch (Exception ex)
             {

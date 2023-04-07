@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using TeploAPI.Utils;
 
@@ -28,7 +29,7 @@ namespace SweetAPI.Utils
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
 
-                string accountEmail = jwtToken.Claims.First(x => x.Type == "email").Value;
+                string accountEmail = jwtToken.Claims.First(x => x.Type == ClaimTypes.Name).Value;
 
                 if (accountEmail != null)
                     return accountEmail;

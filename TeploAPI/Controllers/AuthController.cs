@@ -9,6 +9,7 @@ using SweetAPI.Utils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using TeploAPI.Data;
+using TeploAPI.Migrations;
 using TeploAPI.Models;
 using TeploAPI.Utils;
 
@@ -111,7 +112,7 @@ namespace TeploAPI.Controllers
             existUser.LastLoginDate = DateTime.Now;
             _context.SaveChanges();
 
-            var claims = new List<Claim> { new Claim("email", email) };
+            var claims = new List<Claim> { new Claim(ClaimTypes.Name, email), new Claim("uid", existUser.Id.ToString()) };
 
             var timeNow = DateTime.UtcNow;
 

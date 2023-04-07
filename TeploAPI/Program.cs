@@ -81,6 +81,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
         };
     });
+builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IFurnaceService, FurnaceService>();
 builder.Services.AddScoped<IValidator<User>, UserValidator>();

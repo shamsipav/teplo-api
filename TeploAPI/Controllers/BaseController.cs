@@ -53,27 +53,11 @@ namespace TeploAPI.Controllers
 
             if (save)
             {
-                // TODO: Вынести в отдельный сервис код ниже отсюда (а также отрефакторить весь код с проверками на null):
-                // TODO: А ЕЩЕ ЛУЧШЕ БУДЕТ В ТОКЕН ВШИТЬ ИДЕНТИФИКАТОР ПОЛЬЗОВАТЕЛЯ (а может и нет).
-                var headers = Request.Headers;
-                headers.TryGetValue("Authorization", out var authHeader);
-                string token = authHeader.ToString().Split(' ').Skip(1).FirstOrDefault();
+                int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
+                if (uid == 0)
+                    return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
-                string email = Validate.ValidateToken(token);
-
-                var existUser = new User();
-
-                if (email != null)
-                {
-                    existUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email.ToLower());
-                    if (existUser is null)
-                        return NotFound(new Response { ErrorMessage = "Пользователь с таким Email не найден" });
-                }
-                else
-                    return BadRequest(new Response { ErrorMessage = "Некорректный токен" });
-                // до сюда.
-
-                var savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnace, existUser.Id);
+                var savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnace, uid);
                 if (savedFurnaceId == 0)
                     return StatusCode(500, new Response { ErrorMessage = $"Не удалось сохранить новый вариант исходных данных" });
             }
