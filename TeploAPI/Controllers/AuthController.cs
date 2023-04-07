@@ -70,13 +70,30 @@ namespace TeploAPI.Controllers
 
             try
             {
-                _context.Users.Add(user);
-                _context.SaveChanges();
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 Log.Error($"Возникло исключение при регистрации пользователя {ex}");
                 return StatusCode(500, new Response { ErrorMessage = "Возникла ошибка при регистрации пользователя" });
+            }
+
+            try
+            {
+                var cokeCoefficients = CokeCunsumptionReference.GetDefaultData();
+                var furnaceCoefficients = FurnaceCapacityReference.GetDefaultData();
+
+                cokeCoefficients.UserId = user.Id;
+                furnaceCoefficients.UserId = user.Id;
+
+                await _context.CokeCunsumptionReferences.AddAsync(cokeCoefficients);
+                await _context.FurnanceCapacityReferences.AddAsync(furnaceCoefficients);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Возникло исключение при создании справочника для пользователя {ex}");
             }
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = "Пользователь успешно зарегистрирован" });

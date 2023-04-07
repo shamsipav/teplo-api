@@ -1,9 +1,13 @@
 ﻿namespace TeploAPI.Models
 {
-    // TODO: Rename.
-    public class Сoefficients
+    public class FurnaceCapacityReference
     {
         public int Id { get; set; }
+
+        // TODO: Возможно, стоит реализовать более корректную связь, чтобы
+        // другой пользователь не мог получить варианты исходных данных у данного пользователя.
+        public int UserId { get; set; }
+
         /// <summary>
         /// Увеличение массовой доли железа в рудной сыпи на 1 %
         /// </summary>
@@ -103,5 +107,32 @@
         /// Уменьшение массовой доли серы в коксе на 0,1 %
         /// </summary>
         public double ReductionMassFractionOfSera { get; set; }
+
+        public static FurnaceCapacityReference GetDefaultData()
+        {
+            return new FurnaceCapacityReference
+            {
+                IronMassFractionIncreaseInOreRash = 1.7,
+                ShareCrudeOreReductionCharge = 0.2,
+                TemperatureIncreaseInRangeOf800to900 = 0.2,
+                TemperatureIncreaseInRangeOf901to1000 = 0.15,
+                TemperatureIncreaseInRangeOf1001to1100 = 0.12,
+                TemperatureIncreaseInRangeOf1101to1200 = 0.1,
+                IncreaseGasPressureUnderGrate = 1.0,
+                ReductionMassFractionOfSiliciumInChugun = 1.2,
+                ReductionMassFractionOfSeraInChugun = -1.0,
+                IncreaseMassFractionOfPhosphorusInChugun = -1.2,
+                IncreaseMassFractionOfManganeseInChugun = -0.2,
+                IncreaseMassFractionOfTitanInChugun = -1.3,
+                IncreaseBlastHumidity = -0.07,
+                IncreaseNaturalGasCunsimption = 0,
+                OutputFromLimestoneCharge = 0.5,
+                IncreaseVolumeFractionOxygenInBlast = 2.1,
+                ReductionMassFractionTrifles = 1.0,
+                ReductionMassFractionAshInCokeInRangeOf11to12Percent = 1.5,
+                ReductionMassFractionAshInCokeInRangeOf12to13Percent = 1.8,
+                ReductionMassFractionOfSera = 0.3
+            };
+        }
     }
 }

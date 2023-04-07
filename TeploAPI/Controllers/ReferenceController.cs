@@ -1,20 +1,24 @@
-﻿using FluentValidation;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TeploAPI.Data;
+using TeploAPI.Interfaces;
 using TeploAPI.Models;
 
 namespace TeploAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ReferenceController : Controller
     {
+        private IReferenceCoefficientsService _referenceService;
         private TeploDBContext _context;
-        public ReferenceController(TeploDBContext context)
+        public ReferenceController(TeploDBContext context, IReferenceCoefficientsService referenceService)
         {
             _context = context;
+            _referenceService = referenceService;
         }
 
         // TODO: try, catch, Serilog, Fluent (?)
@@ -25,21 +29,14 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            var cokeCoefficients = new Сoefficients();
-            var furnanceCapacityCoefficients = new Сoefficients();
+            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
+            if (uid == 0)
+                return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
-            try
-            {
-                cokeCoefficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 1);
-                furnanceCapacityCoefficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 2);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"HTTP PUT api/reference GetAsync: Ошибка получения коэффициентов для справочника: {ex}");
+            var reference = await _referenceService.GetCoefficientsReferenceByUserIdAsync(uid);
+
+            if (reference == null)
                 return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить коэффициенты для справочника" });
-            }
-
-            ReferenceDTO reference = new ReferenceDTO{ CokeCunsumptionCoefficents = cokeCoefficients, FurnanceCapacityCoefficents = furnanceCapacityCoefficients };
 
             return Ok(new Response { IsSuccess = true, Result = reference });
         }
@@ -47,77 +44,65 @@ namespace TeploAPI.Controllers
         // TODO: Проверить, действительно ли нужно использовать ReferenceDTO,
         // лучше по отдельности (для кокса и для пр.)?
         [HttpPost]
-        public async Task<IActionResult> PostAsync(ReferenceDTO reference)
+        public async Task<IActionResult> PostAsync(Reference reference)
         {
-            if (reference.CokeCunsumptionCoefficents != null && reference.FurnanceCapacityCoefficents != null)
+            if (reference.CokeCunsumptionReference != null && reference.FurnaceCapacityReference != null)
             {
-                var cokeCofficients = new Сoefficients();
-                var furnanceCapacityCoefficients = new Сoefficients();
+                int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
+                if (uid == 0)
+                    return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
+
+                var existReference = await _referenceService.GetCoefficientsReferenceByUserIdAsync(uid);
+
+                if (reference == null)
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить текущие коэффициенты для обновления справочника" });
+
+                existReference.CokeCunsumptionReference.IronMassFractionIncreaseInOreRash = reference.CokeCunsumptionReference.IronMassFractionIncreaseInOreRash;
+                existReference.CokeCunsumptionReference.ShareCrudeOreReductionCharge = reference.CokeCunsumptionReference.ShareCrudeOreReductionCharge;
+                existReference.CokeCunsumptionReference.TemperatureIncreaseInRangeOf800to900 = reference.CokeCunsumptionReference.TemperatureIncreaseInRangeOf800to900;
+                existReference.CokeCunsumptionReference.TemperatureIncreaseInRangeOf901to1000 = reference.CokeCunsumptionReference.TemperatureIncreaseInRangeOf901to1000;
+                existReference.CokeCunsumptionReference.TemperatureIncreaseInRangeOf1001to1100 = reference.CokeCunsumptionReference.TemperatureIncreaseInRangeOf1001to1100;
+                existReference.CokeCunsumptionReference.TemperatureIncreaseInRangeOf1101to1200 = reference.CokeCunsumptionReference.TemperatureIncreaseInRangeOf1101to1200;
+                existReference.CokeCunsumptionReference.IncreaseGasPressureUnderGrate = reference.CokeCunsumptionReference.IncreaseGasPressureUnderGrate;
+                existReference.CokeCunsumptionReference.ReductionMassFractionOfSiliciumInChugun = reference.CokeCunsumptionReference.ReductionMassFractionOfSiliciumInChugun;
+                existReference.CokeCunsumptionReference.ReductionMassFractionOfSeraInChugun = reference.CokeCunsumptionReference.ReductionMassFractionOfSeraInChugun;
+                existReference.CokeCunsumptionReference.IncreaseMassFractionOfPhosphorusInChugun = reference.CokeCunsumptionReference.IncreaseMassFractionOfPhosphorusInChugun;
+                existReference.CokeCunsumptionReference.IncreaseMassFractionOfManganeseInChugun = reference.CokeCunsumptionReference.IncreaseMassFractionOfManganeseInChugun;
+                existReference.CokeCunsumptionReference.IncreaseMassFractionOfTitanInChugun = reference.CokeCunsumptionReference.IncreaseMassFractionOfTitanInChugun;
+                existReference.CokeCunsumptionReference.IncreaseBlastHumidity = reference.CokeCunsumptionReference.IncreaseBlastHumidity;
+                existReference.CokeCunsumptionReference.IncreaseNaturalGasCunsimption = reference.CokeCunsumptionReference.IncreaseNaturalGasCunsimption;
+                existReference.CokeCunsumptionReference.OutputFromLimestoneCharge = reference.CokeCunsumptionReference.OutputFromLimestoneCharge;
+                existReference.CokeCunsumptionReference.IncreaseVolumeFractionOxygenInBlast = reference.CokeCunsumptionReference.IncreaseVolumeFractionOxygenInBlast;
+                existReference.CokeCunsumptionReference.ReductionMassFractionTrifles = reference.CokeCunsumptionReference.ReductionMassFractionTrifles;
+                existReference.CokeCunsumptionReference.ReductionMassFractionAshInCokeInRangeOf11to12Percent = reference.CokeCunsumptionReference.ReductionMassFractionAshInCokeInRangeOf11to12Percent;
+                existReference.CokeCunsumptionReference.ReductionMassFractionAshInCokeInRangeOf12to13Percent = reference.CokeCunsumptionReference.ReductionMassFractionAshInCokeInRangeOf12to13Percent;
+                existReference.CokeCunsumptionReference.ReductionMassFractionOfSera = reference.CokeCunsumptionReference.ReductionMassFractionOfSera;
+
+                existReference.FurnaceCapacityReference.IronMassFractionIncreaseInOreRash = reference.FurnaceCapacityReference.IronMassFractionIncreaseInOreRash;
+                existReference.FurnaceCapacityReference.ShareCrudeOreReductionCharge = reference.FurnaceCapacityReference.ShareCrudeOreReductionCharge;
+                existReference.FurnaceCapacityReference.TemperatureIncreaseInRangeOf800to900 = reference.FurnaceCapacityReference.TemperatureIncreaseInRangeOf800to900;
+                existReference.FurnaceCapacityReference.TemperatureIncreaseInRangeOf901to1000 = reference.FurnaceCapacityReference.TemperatureIncreaseInRangeOf901to1000;
+                existReference.FurnaceCapacityReference.TemperatureIncreaseInRangeOf1001to1100 = reference.FurnaceCapacityReference.TemperatureIncreaseInRangeOf1001to1100;
+                existReference.FurnaceCapacityReference.TemperatureIncreaseInRangeOf1101to1200 = reference.FurnaceCapacityReference.TemperatureIncreaseInRangeOf1101to1200;
+                existReference.FurnaceCapacityReference.IncreaseGasPressureUnderGrate = reference.FurnaceCapacityReference.IncreaseGasPressureUnderGrate;
+                existReference.FurnaceCapacityReference.ReductionMassFractionOfSiliciumInChugun = reference.FurnaceCapacityReference.ReductionMassFractionOfSiliciumInChugun;
+                existReference.FurnaceCapacityReference.ReductionMassFractionOfSeraInChugun = reference.FurnaceCapacityReference.ReductionMassFractionOfSeraInChugun;
+                existReference.FurnaceCapacityReference.IncreaseMassFractionOfPhosphorusInChugun = reference.FurnaceCapacityReference.IncreaseMassFractionOfPhosphorusInChugun;
+                existReference.FurnaceCapacityReference.IncreaseMassFractionOfManganeseInChugun = reference.FurnaceCapacityReference.IncreaseMassFractionOfManganeseInChugun;
+                existReference.FurnaceCapacityReference.IncreaseMassFractionOfTitanInChugun = reference.FurnaceCapacityReference.IncreaseMassFractionOfTitanInChugun;
+                existReference.FurnaceCapacityReference.IncreaseBlastHumidity = reference.FurnaceCapacityReference.IncreaseBlastHumidity;
+                existReference.FurnaceCapacityReference.IncreaseNaturalGasCunsimption = reference.FurnaceCapacityReference.IncreaseNaturalGasCunsimption;
+                existReference.FurnaceCapacityReference.OutputFromLimestoneCharge = reference.FurnaceCapacityReference.OutputFromLimestoneCharge;
+                existReference.FurnaceCapacityReference.IncreaseVolumeFractionOxygenInBlast = reference.FurnaceCapacityReference.IncreaseVolumeFractionOxygenInBlast;
+                existReference.FurnaceCapacityReference.ReductionMassFractionTrifles = reference.FurnaceCapacityReference.ReductionMassFractionTrifles;
+                existReference.FurnaceCapacityReference.ReductionMassFractionAshInCokeInRangeOf11to12Percent = reference.FurnaceCapacityReference.ReductionMassFractionAshInCokeInRangeOf11to12Percent;
+                existReference.FurnaceCapacityReference.ReductionMassFractionAshInCokeInRangeOf12to13Percent = reference.FurnaceCapacityReference.ReductionMassFractionAshInCokeInRangeOf12to13Percent;
+                existReference.FurnaceCapacityReference.ReductionMassFractionOfSera = reference.FurnaceCapacityReference.ReductionMassFractionOfSera;
 
                 try
                 {
-                    cokeCofficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 1);
-                    furnanceCapacityCoefficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 2);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"HTTP PUT api/reference PutAsync: Ошибка получения коэффициентов для справочника: {ex}");
-                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить коэффициенты для справочника" });
-                }
-
-                if (cokeCofficients != null && furnanceCapacityCoefficients != null)
-                {
-                    cokeCofficients.IronMassFractionIncreaseInOreRash = reference.CokeCunsumptionCoefficents.IronMassFractionIncreaseInOreRash;
-                    cokeCofficients.ShareCrudeOreReductionCharge = reference.CokeCunsumptionCoefficents.ShareCrudeOreReductionCharge;
-                    cokeCofficients.TemperatureIncreaseInRangeOf800to900 = reference.CokeCunsumptionCoefficents.TemperatureIncreaseInRangeOf800to900;
-                    cokeCofficients.TemperatureIncreaseInRangeOf901to1000 = reference.CokeCunsumptionCoefficents.TemperatureIncreaseInRangeOf901to1000;
-                    cokeCofficients.TemperatureIncreaseInRangeOf1001to1100 = reference.CokeCunsumptionCoefficents.TemperatureIncreaseInRangeOf1001to1100;
-                    cokeCofficients.TemperatureIncreaseInRangeOf1101to1200 = reference.CokeCunsumptionCoefficents.TemperatureIncreaseInRangeOf1101to1200;
-                    cokeCofficients.IncreaseGasPressureUnderGrate = reference.CokeCunsumptionCoefficents.IncreaseGasPressureUnderGrate;
-                    cokeCofficients.ReductionMassFractionOfSiliciumInChugun = reference.CokeCunsumptionCoefficents.ReductionMassFractionOfSiliciumInChugun;
-                    cokeCofficients.ReductionMassFractionOfSeraInChugun = reference.CokeCunsumptionCoefficents.ReductionMassFractionOfSeraInChugun;
-                    cokeCofficients.IncreaseMassFractionOfPhosphorusInChugun = reference.CokeCunsumptionCoefficents.IncreaseMassFractionOfPhosphorusInChugun;
-                    cokeCofficients.IncreaseMassFractionOfManganeseInChugun = reference.CokeCunsumptionCoefficents.IncreaseMassFractionOfManganeseInChugun;
-                    cokeCofficients.IncreaseMassFractionOfTitanInChugun = reference.CokeCunsumptionCoefficents.IncreaseMassFractionOfTitanInChugun;
-                    cokeCofficients.IncreaseBlastHumidity = reference.CokeCunsumptionCoefficents.IncreaseBlastHumidity;
-                    cokeCofficients.IncreaseNaturalGasCunsimption = reference.CokeCunsumptionCoefficents.IncreaseNaturalGasCunsimption;
-                    cokeCofficients.OutputFromLimestoneCharge = reference.CokeCunsumptionCoefficents.OutputFromLimestoneCharge;
-                    cokeCofficients.IncreaseVolumeFractionOxygenInBlast = reference.CokeCunsumptionCoefficents.IncreaseVolumeFractionOxygenInBlast;
-                    cokeCofficients.ReductionMassFractionTrifles = reference.CokeCunsumptionCoefficents.ReductionMassFractionTrifles;
-                    cokeCofficients.ReductionMassFractionAshInCokeInRangeOf11to12Percent = reference.CokeCunsumptionCoefficents.ReductionMassFractionAshInCokeInRangeOf11to12Percent;
-                    cokeCofficients.ReductionMassFractionAshInCokeInRangeOf12to13Percent = reference.CokeCunsumptionCoefficents.ReductionMassFractionAshInCokeInRangeOf12to13Percent;
-                    cokeCofficients.ReductionMassFractionOfSera = reference.CokeCunsumptionCoefficents.ReductionMassFractionOfSera;
-
-                    furnanceCapacityCoefficients.IronMassFractionIncreaseInOreRash = reference.FurnanceCapacityCoefficents.IronMassFractionIncreaseInOreRash;
-                    furnanceCapacityCoefficients.ShareCrudeOreReductionCharge = reference.FurnanceCapacityCoefficents.ShareCrudeOreReductionCharge;
-                    furnanceCapacityCoefficients.TemperatureIncreaseInRangeOf800to900 = reference.FurnanceCapacityCoefficents.TemperatureIncreaseInRangeOf800to900;
-                    furnanceCapacityCoefficients.TemperatureIncreaseInRangeOf901to1000 = reference.FurnanceCapacityCoefficents.TemperatureIncreaseInRangeOf901to1000;
-                    furnanceCapacityCoefficients.TemperatureIncreaseInRangeOf1001to1100 = reference.FurnanceCapacityCoefficents.TemperatureIncreaseInRangeOf1001to1100;
-                    furnanceCapacityCoefficients.TemperatureIncreaseInRangeOf1101to1200 = reference.FurnanceCapacityCoefficents.TemperatureIncreaseInRangeOf1101to1200;
-                    furnanceCapacityCoefficients.IncreaseGasPressureUnderGrate = reference.FurnanceCapacityCoefficents.IncreaseGasPressureUnderGrate;
-                    furnanceCapacityCoefficients.ReductionMassFractionOfSiliciumInChugun = reference.FurnanceCapacityCoefficents.ReductionMassFractionOfSiliciumInChugun;
-                    furnanceCapacityCoefficients.ReductionMassFractionOfSeraInChugun = reference.FurnanceCapacityCoefficents.ReductionMassFractionOfSeraInChugun;
-                    furnanceCapacityCoefficients.IncreaseMassFractionOfPhosphorusInChugun = reference.FurnanceCapacityCoefficents.IncreaseMassFractionOfPhosphorusInChugun;
-                    furnanceCapacityCoefficients.IncreaseMassFractionOfManganeseInChugun = reference.FurnanceCapacityCoefficents.IncreaseMassFractionOfManganeseInChugun;
-                    furnanceCapacityCoefficients.IncreaseMassFractionOfTitanInChugun = reference.FurnanceCapacityCoefficents.IncreaseMassFractionOfTitanInChugun;
-                    furnanceCapacityCoefficients.IncreaseBlastHumidity = reference.FurnanceCapacityCoefficents.IncreaseBlastHumidity;
-                    furnanceCapacityCoefficients.IncreaseNaturalGasCunsimption = reference.FurnanceCapacityCoefficents.IncreaseNaturalGasCunsimption;
-                    furnanceCapacityCoefficients.OutputFromLimestoneCharge = reference.FurnanceCapacityCoefficents.OutputFromLimestoneCharge;
-                    furnanceCapacityCoefficients.IncreaseVolumeFractionOxygenInBlast = reference.FurnanceCapacityCoefficents.IncreaseVolumeFractionOxygenInBlast;
-                    furnanceCapacityCoefficients.ReductionMassFractionTrifles = reference.FurnanceCapacityCoefficents.ReductionMassFractionTrifles;
-                    furnanceCapacityCoefficients.ReductionMassFractionAshInCokeInRangeOf11to12Percent = reference.FurnanceCapacityCoefficents.ReductionMassFractionAshInCokeInRangeOf11to12Percent;
-                    furnanceCapacityCoefficients.ReductionMassFractionAshInCokeInRangeOf12to13Percent = reference.FurnanceCapacityCoefficents.ReductionMassFractionAshInCokeInRangeOf12to13Percent;
-                    furnanceCapacityCoefficients.ReductionMassFractionOfSera = reference.FurnanceCapacityCoefficents.ReductionMassFractionOfSera;
-                }
-                else
-                {
-                    return NotFound(new Response { ErrorMessage = "Не найдены данные в справочнике корректировочных коэффициентов" });
-                }
-
-                try
-                {
-                    _context.Сoefficients.Update(cokeCofficients);
-                    _context.Сoefficients.Update(furnanceCapacityCoefficients);
+                    _context.CokeCunsumptionReferences.Update(existReference.CokeCunsumptionReference);
+                    _context.FurnanceCapacityReferences.Update(existReference.FurnaceCapacityReference);
                     await _context.SaveChangesAsync();
                 }
                 catch(Exception ex)
