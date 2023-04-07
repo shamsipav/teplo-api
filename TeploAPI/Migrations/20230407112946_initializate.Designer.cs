@@ -12,18 +12,125 @@ using TeploAPI.Data;
 namespace TeploAPI.Migrations
 {
     [DbContext(typeof(TeploDBContext))]
-    [Migration("20230327102758_date-save-input")]
-    partial class datesaveinput
+    [Migration("20230407112946_initializate")]
+    partial class initializate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.3")
+                .HasAnnotation("ProductVersion", "7.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("SweetAPI.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastLoginDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("LastLoginIp")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("TeploAPI.Models.CokeCunsumptionReference", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("IncreaseBlastHumidity")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("IncreaseGasPressureUnderGrate")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("IncreaseMassFractionOfManganeseInChugun")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("IncreaseMassFractionOfPhosphorusInChugun")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("IncreaseMassFractionOfTitanInChugun")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("IncreaseNaturalGasCunsimption")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("IncreaseVolumeFractionOxygenInBlast")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("IronMassFractionIncreaseInOreRash")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("OutputFromLimestoneCharge")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("ReductionMassFractionAshInCokeInRangeOf11to12Percent")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("ReductionMassFractionAshInCokeInRangeOf12to13Percent")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("ReductionMassFractionOfSera")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("ReductionMassFractionOfSeraInChugun")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("ReductionMassFractionOfSiliciumInChugun")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("ReductionMassFractionTrifles")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("ShareCrudeOreReductionCharge")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("TemperatureIncreaseInRangeOf1001to1100")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("TemperatureIncreaseInRangeOf1101to1200")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("TemperatureIncreaseInRangeOf800to900")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("TemperatureIncreaseInRangeOf901to1000")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CokeCunsumptionReferences");
+                });
 
             modelBuilder.Entity("TeploAPI.Models.Furnace", b =>
                 {
@@ -132,6 +239,9 @@ namespace TeploAPI.Migrations
                     b.Property<double>("HeightOfZaplechiks")
                         .HasColumnType("double precision");
 
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
                     b.Property<double>("NaturalGasConsumption")
                         .HasColumnType("double precision");
 
@@ -148,7 +258,7 @@ namespace TeploAPI.Migrations
                         .HasColumnType("double precision");
 
                     b.Property<DateTime?>("SaveDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<double>("ShareOfPelletsInCharge")
                         .HasColumnType("double precision");
@@ -174,6 +284,9 @@ namespace TeploAPI.Migrations
                     b.Property<double>("UsefulVolumeOfFurnace")
                         .HasColumnType("double precision");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.Property<double>("VolatileContentInCoke")
                         .HasColumnType("double precision");
 
@@ -182,38 +295,7 @@ namespace TeploAPI.Migrations
                     b.ToTable("Furnaces");
                 });
 
-            modelBuilder.Entity("TeploAPI.Models.Reference", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("RefId1")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("RefId2")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RefId1");
-
-                    b.HasIndex("RefId2");
-
-                    b.ToTable("References");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            RefId1 = 1,
-                            RefId2 = 1
-                        });
-                });
-
-            modelBuilder.Entity("TeploAPI.Models.Сoefficients", b =>
+            modelBuilder.Entity("TeploAPI.Models.FurnaceCapacityReference", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -281,74 +363,82 @@ namespace TeploAPI.Migrations
                     b.Property<double>("TemperatureIncreaseInRangeOf901to1000")
                         .HasColumnType("double precision");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Сoefficients");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            IncreaseBlastHumidity = 0.14999999999999999,
-                            IncreaseGasPressureUnderGrate = -0.20000000000000001,
-                            IncreaseMassFractionOfManganeseInChugun = 0.20000000000000001,
-                            IncreaseMassFractionOfPhosphorusInChugun = 1.2,
-                            IncreaseMassFractionOfTitanInChugun = 1.3,
-                            IncreaseNaturalGasCunsimption = -0.69999999999999996,
-                            IncreaseVolumeFractionOxygenInBlast = 0.29999999999999999,
-                            IronMassFractionIncreaseInOreRash = -1.0,
-                            OutputFromLimestoneCharge = -0.5,
-                            ReductionMassFractionAshInCokeInRangeOf11to12Percent = -1.5,
-                            ReductionMassFractionAshInCokeInRangeOf12to13Percent = -2.0,
-                            ReductionMassFractionOfSera = -0.29999999999999999,
-                            ReductionMassFractionOfSeraInChugun = 1.0,
-                            ReductionMassFractionOfSiliciumInChugun = -1.2,
-                            ReductionMassFractionTrifles = -0.5,
-                            ShareCrudeOreReductionCharge = -0.20000000000000001,
-                            TemperatureIncreaseInRangeOf1001to1100 = -0.23000000000000001,
-                            TemperatureIncreaseInRangeOf1101to1200 = -0.20000000000000001,
-                            TemperatureIncreaseInRangeOf800to900 = -0.33000000000000002,
-                            TemperatureIncreaseInRangeOf901to1000 = -0.29999999999999999
-                        },
-                        new
-                        {
-                            Id = 2,
-                            IncreaseBlastHumidity = -0.070000000000000007,
-                            IncreaseGasPressureUnderGrate = 1.0,
-                            IncreaseMassFractionOfManganeseInChugun = -0.20000000000000001,
-                            IncreaseMassFractionOfPhosphorusInChugun = -1.2,
-                            IncreaseMassFractionOfTitanInChugun = -1.3,
-                            IncreaseNaturalGasCunsimption = 0.0,
-                            IncreaseVolumeFractionOxygenInBlast = 2.1000000000000001,
-                            IronMassFractionIncreaseInOreRash = 1.7,
-                            OutputFromLimestoneCharge = 0.5,
-                            ReductionMassFractionAshInCokeInRangeOf11to12Percent = 1.5,
-                            ReductionMassFractionAshInCokeInRangeOf12to13Percent = 1.8,
-                            ReductionMassFractionOfSera = 0.29999999999999999,
-                            ReductionMassFractionOfSeraInChugun = -1.0,
-                            ReductionMassFractionOfSiliciumInChugun = 1.2,
-                            ReductionMassFractionTrifles = 1.0,
-                            ShareCrudeOreReductionCharge = 0.20000000000000001,
-                            TemperatureIncreaseInRangeOf1001to1100 = 0.12,
-                            TemperatureIncreaseInRangeOf1101to1200 = 0.10000000000000001,
-                            TemperatureIncreaseInRangeOf800to900 = 0.20000000000000001,
-                            TemperatureIncreaseInRangeOf901to1000 = 0.14999999999999999
-                        });
+                    b.ToTable("FurnanceCapacityReferences");
                 });
 
-            modelBuilder.Entity("TeploAPI.Models.Reference", b =>
+            modelBuilder.Entity("TeploAPI.Models.Material", b =>
                 {
-                    b.HasOne("TeploAPI.Models.Сoefficients", "CokeCunsumptionCoefficents")
-                        .WithMany()
-                        .HasForeignKey("RefId1");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
 
-                    b.HasOne("TeploAPI.Models.Сoefficients", "FurnanceCapacityCoefficents")
-                        .WithMany()
-                        .HasForeignKey("RefId2");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Navigation("CokeCunsumptionCoefficents");
+                    b.Property<double>("Al2O3")
+                        .HasColumnType("double precision");
 
-                    b.Navigation("FurnanceCapacityCoefficents");
+                    b.Property<double>("BaseOne")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("CaO")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Cr")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Fe")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Fe2O3")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("FeO")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("FiveZero")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("MgO")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Mn")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("MnO")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Moisture")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<double>("P")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("S")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("SiO2")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("TiO2")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Zn")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Materials");
                 });
 #pragma warning restore 612, 618
         }

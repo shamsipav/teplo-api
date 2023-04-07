@@ -1,22 +1,27 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TeploAPI.Data;
+using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Services;
 using TeploAPI.ViewModels;
 
 namespace TeploAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ProjectController : Controller
     {
+        private IReferenceCoefficientsService _referenceService;
         private TeploDBContext _context;
-        public ProjectController(TeploDBContext context)
+        public ProjectController(TeploDBContext context, IReferenceCoefficientsService referenceService)
         {
             _context = context;
+            _referenceService = referenceService;
         }
 
         // TODO: ПРОВЕРИТЬ РАБОТЕТ ЛИ КОРРЕКТНО ПРОЕКТНЫЙ РЕЖИМ
@@ -25,6 +30,10 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync(FurnaceProject projectPeriodFurnaceData, int? inputDataId)
         {
+            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
+            if (uid == 0)
+                return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
+
             var basePeriodFurnaceData = new Furnace();
             var basePeriodFurnaceDataClear = new Furnace();
 
@@ -40,23 +49,10 @@ namespace TeploAPI.Controllers
                 return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить набор исходных данных для базового периода" });
             }
 
-            // TODO: Добавить try, catch, log, return Error
-            // Из базы
-            var cokeCoefficients = new Сoefficients();
-            var furnanceCapacityCoefficients = new Сoefficients();
+            var reference = await _referenceService.GetCoefficientsReferenceByUserIdAsync(uid);
 
-            try
-            {
-                cokeCoefficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 1);
-                furnanceCapacityCoefficients = await _context.Сoefficients.AsNoTracking().FirstOrDefaultAsync(i => i.Id == 2);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"HTTP POST api/project Ошибка получения коэффициентов для справочника: {ex}");
+            if (reference == null)
                 return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить коэффициенты для справочника" });
-            }
-
-            Reference reference = new Reference { CokeCunsumptionCoefficents = cokeCoefficients, FurnanceCapacityCoefficents = furnanceCapacityCoefficients };
 
             CalculateService calculate = new CalculateService();
 
