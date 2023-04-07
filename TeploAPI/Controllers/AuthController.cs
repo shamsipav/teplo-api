@@ -9,7 +9,6 @@ using SweetAPI.Utils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using TeploAPI.Data;
-using TeploAPI.Migrations;
 using TeploAPI.Models;
 using TeploAPI.Utils;
 
