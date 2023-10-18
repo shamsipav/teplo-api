@@ -17,4 +17,4 @@ services:
     hostname: api
     build: ./
     ports:
-      - "0.0.0.0:5003:5003"
+      - "0.0.0.0:5004:5004"
