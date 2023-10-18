@@ -11,7 +11,7 @@ namespace TeploAPI.Utils
 
         public const string AUDIENCE = "TeploAuthClient";
 
-        const string KEY = "mSR@wTe_mvbgRwyBqgz+2_pY5GxK9AhsZYz?92YfP=8BwUjHL?@3?wM5-yexU8tH";
+        const string KEY = "mSR@qTe_mvbgRwyBqgz+3_pY5GxK2AhsZYz?92YfP=8BwUjHL?@3?wM5-yexU8tH";
 
         public const int LIFETIMEDAYS = 1;
 

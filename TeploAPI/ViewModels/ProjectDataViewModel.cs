@@ -4,7 +4,7 @@ namespace TeploAPI.ViewModels
 {
     public class ProjectDataViewModel
     {
-        public Furnace? ChangedInputData { get; set; }
+        public FurnaceBase? ChangedInputData { get; set; }
         public FurnaceProject? ProjectInputData { get; set; }
     }
 }

@@ -8,10 +8,12 @@ using TeploAPI.Models;
 
 namespace TeploAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FurnaceController : Controller
     {
+        // TODO: Добавить валидатор!
         private TeploDBContext _context;
         public FurnaceController(TeploDBContext context)
         {
@@ -19,10 +21,9 @@ namespace TeploAPI.Controllers
         }
 
         /// <summary>
-        /// Получение всех сохранненых вариантов исходных данных
+        /// Получение всех значений справочника печей
         /// </summary>
         /// <returns></returns>
-        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
@@ -33,61 +34,157 @@ namespace TeploAPI.Controllers
             var furnaces = new List<Furnace>();
             try
             {
-                furnaces = await _context.Furnaces.AsNoTracking().Where(f => f.UserId == uid).ToListAsync();
+                furnaces = await _context.Furnaces.AsNoTracking().Where(m => m.UserId == uid).ToListAsync();
             }
             catch (Exception ex)
             {
-                Log.Error($"HTTP POST api/furnace GetAsync: Ошибка получения сохраненных вариантов исходных данных: {ex}");
-                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить сохраненные варианты исходных данных" });
+                Log.Error($"HTTP GET api/furnace GetAsync: Ошибка получения значений справочника печей: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить значения справочника печей" });
             }
 
             return Ok(new Response { IsSuccess = true, Result = furnaces });
         }
 
         /// <summary>
-        /// Получение дефолтного варианта для расчета
+        /// Добавление печи в справочник
         /// </summary>
+        /// <param name="material"></param>
         /// <returns></returns>
-        [HttpGet("default")]
-        public IActionResult GetDefault()
+        [HttpPost]
+        public async Task<IActionResult> CreateAsync(Furnace furnace)
         {
-            var furnace = new Furnace();
+            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
+            if (uid == 0)
+                return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
+
+            if (furnace == null)
+                return BadRequest(new Response { ErrorMessage = "Отсутсвуют значения для добавления печи в справочник" });
+
+            //ValidationResult validationResult = await _validator.ValidateAsync(material);
+
+            //if (!validationResult.IsValid)
+            //    return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
             try
             {
-                furnace = Furnace.GetDefaultData();
+                furnace.UserId = uid;
+                await _context.Furnaces.AddAsync(furnace);
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                Log.Error($"HTTP POST api/furnace GetDefault: Ошибка получения варианта исходных данных по умолчанию: {ex}");
-                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить вариант исходных данных по умолчанию" });
+                Log.Error($"HTTP POST api/furnace CreateAsync: Ошибка добавления печи: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось добавить печь в справочник" });
+            }
+
+            return Ok(new Response { IsSuccess = true, SuccessMessage = $"Печь №{furnace.NumberOfFurnace} успешно добавлена", Result = furnace });
+        }
+
+        /// <summary>
+        /// Обновление печи в справочнике
+        /// </summary>
+        /// <param name="material"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IActionResult> UpdateByIdAsync(Furnace furnace)
+        {
+            if (furnace == null)
+                return BadRequest(new Response { ErrorMessage = "Отсутсвуют значения для обновления материала в справочнике" });
+
+            //ValidationResult validationResult = await _validator.ValidateAsync(material);
+
+            //if (!validationResult.IsValid)
+            //    return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
+
+            var existFurnace = new Furnace();
+            try
+            {
+                existFurnace = await _context.Furnaces.FirstOrDefaultAsync(m => m.Id == furnace.Id);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"HTTP GET api/furnace UpdateByIdAsync: Ошибка получения печи с идентификатором id = '{furnace.Id}: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить печь с идентификатором id = '{furnace.Id}'" });
+            }
+
+            if (existFurnace == null)
+            {
+                return NotFound(StatusCode(500, new Response { ErrorMessage = $"Не удалось найти информацию о печи с идентификатором id = '{furnace.Id}'" }));
+            }
+
+            try
+            {
+                existFurnace.NumberOfFurnace = furnace.NumberOfFurnace;
+                existFurnace.UsefulVolumeOfFurnace = furnace.UsefulVolumeOfFurnace;
+                existFurnace.UsefulHeightOfFurnace = furnace.UsefulHeightOfFurnace;
+                existFurnace.DiameterOfColoshnik = furnace.DiameterOfColoshnik;
+                existFurnace.DiameterOfRaspar = furnace.DiameterOfRaspar;
+                existFurnace.DiameterOfHorn = furnace.DiameterOfHorn;
+                existFurnace.HeightOfHorn = furnace.HeightOfHorn;
+                existFurnace.HeightOfTuyeres = furnace.HeightOfTuyeres;
+                existFurnace.HeightOfZaplechiks = furnace.HeightOfZaplechiks;
+                existFurnace.HeightOfRaspar = furnace.HeightOfRaspar;
+                existFurnace.HeightOfShaft = furnace.HeightOfShaft;
+                existFurnace.HeightOfColoshnik = furnace.HeightOfColoshnik;
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"HTTP GET api/furnace UpdateByIdAsync: Ошибка обновления печи с идентификатором id = '{furnace.Id}: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить печь с идентификатором id = '{furnace.Id}'" });
+            }
+
+            return Ok(new Response { IsSuccess = true, SuccessMessage = "Изменения успешно применены", Result = existFurnace });
+        }
+
+        /// <summary>
+        /// Получение определенной печи
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetByIdAsync(int? id)
+        {
+            var furnace = new Furnace();
+            try
+            {
+                furnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"HTTP GET api/furnace GetByIdAsync: Ошибка получения печи с идентификатором id = '{id}: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить печь с идентификатором id = '{id}'" });
+            }
+
+            if (furnace == null)
+            {
+                return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о печи с идентификатором id = '{id}'" });
             }
 
             return Ok(new Response { IsSuccess = true, Result = furnace });
         }
 
-        // TODO: Привязать к пользователю.
         /// <summary>
-        /// Удаление варианта исходных данных
+        /// Удаление печи из справочника
         /// </summary>
-        /// <param name="furnaceId"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        [Authorize]
-        [HttpDelete("{furnaceId}")]
-        public async Task<IActionResult> DeleteAsync(int? furnaceId)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(int? id)
         {
-            if (furnaceId != null)
+            if (id != null)
             {
                 var furnace = new Furnace();
 
                 try
                 {
-                    furnace = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == furnaceId);
+                    furnace = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == id);
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"HTTP DELETE api/furnace DeleteAsync: Ошибка получения варианта исходных данных для удаления: {ex}");
-                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить вариант исходных данных для удаления" });
+                    Log.Error($"HTTP DELETE api/furnace DeleteAsync: Ошибка получения печи для удаления: {ex}");
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить печь для удаления: {ex}" });
                 }
 
                 if (furnace != null)
@@ -99,17 +196,17 @@ namespace TeploAPI.Controllers
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"HTTP DELETE api/furnace DeleteAsync: Ошибка удаления варианта исходных данных: {ex}");
-                        return StatusCode(500, new Response { ErrorMessage = $"Не удалось удалить вариант исходных данных с идентификатором id = '{furnaceId}'" });
+                        Log.Error($"HTTP DELETE api/furnace DeleteAsync: Ошибка удаления печи: {ex}");
+                        return StatusCode(500, new Response { ErrorMessage = $"Не удалось удалить печь с идентификатором id = '{id}'" });
                     }
 
-                    return Ok(new Response { IsSuccess = true, Result = furnace });
+                    return Ok(new Response { IsSuccess = true, SuccessMessage = $"Печь №{furnace.NumberOfFurnace} успешно удалена", Result = furnace });
                 }
 
-                return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию об варианте расчета с идентификатором id = '{furnaceId}'" });
+                return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о печи с идентификатором id = '{id}'" });
             }
 
-            return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию об варианте расчета с идентификатором id = '{furnaceId}'" });
+            return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о печи с идентификатором id = '{id}'" });
         }
     }
 }

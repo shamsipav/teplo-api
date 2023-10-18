@@ -19,14 +19,14 @@ namespace TeploAPI.Services
         /// </summary>
         /// <param name="furnace"></param>
         /// <returns></returns>
-        public async Task<int> UpdateFurnaceAsync(Furnace furnace)
+        public async Task<int> UpdateFurnaceAsync(FurnaceBase furnace)
         {
             if (furnace != null)
             {
-                var existFurnace = new Furnace();
+                var existFurnace = new FurnaceBase();
                 try
                 {
-                    existFurnace = await _context.Furnaces.FirstOrDefaultAsync(f => f.Id == furnace.Id);
+                    existFurnace = await _context.FurnaceBases.FirstOrDefaultAsync(f => f.Id == furnace.Id);
 
                     if (existFurnace != null)
                     {
@@ -102,7 +102,7 @@ namespace TeploAPI.Services
         /// </summary>
         /// <param name="furnace"></param>
         /// <returns></returns>
-        public async Task<int> SaveFurnaceAsync(Furnace furnace, int userId)
+        public async Task<int> SaveFurnaceAsync(FurnaceBase furnace, int userId)
         {
             if (furnace != null)
             {
@@ -111,7 +111,7 @@ namespace TeploAPI.Services
                     furnace.Id = 0;
                     furnace.UserId = userId;
                     furnace.SaveDate = DateTime.Now;
-                    _context.Furnaces.Add(furnace);
+                    _context.FurnaceBases.Add(furnace);
                     await _context.SaveChangesAsync();
 
                     return 1;

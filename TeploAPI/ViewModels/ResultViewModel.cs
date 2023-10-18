@@ -7,7 +7,7 @@ namespace TeploAPI.ViewModels
     /// </summary>
     public class ResultViewModel
     {
-        public Furnace? Input { get; set; }
+        public FurnaceBase? Input { get; set; }
         public Result? Result { get; set; }
     }
 }

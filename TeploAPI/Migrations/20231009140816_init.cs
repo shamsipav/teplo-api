@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace TeploAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class initializate : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -46,14 +46,14 @@ namespace TeploAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Furnaces",
+                name: "FurnaceBases",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
-                    NumberOfFurnace = table.Column<double>(type: "double precision", nullable: false),
+                    NumberOfFurnace = table.Column<int>(type: "integer", nullable: false),
                     UsefulVolumeOfFurnace = table.Column<double>(type: "double precision", nullable: false),
                     UsefulHeightOfFurnace = table.Column<double>(type: "double precision", nullable: false),
                     DiameterOfColoshnik = table.Column<double>(type: "double precision", nullable: false),
@@ -101,6 +101,31 @@ namespace TeploAPI.Migrations
                     HeatOfIncompleteBurningCarbonOfCoke = table.Column<double>(type: "double precision", nullable: false),
                     TemperatureOfCokeThatCameToTuyeres = table.Column<double>(type: "double precision", nullable: false),
                     SaveDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FurnaceBases", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Furnaces",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    NumberOfFurnace = table.Column<int>(type: "integer", nullable: false),
+                    UsefulVolumeOfFurnace = table.Column<double>(type: "double precision", nullable: false),
+                    UsefulHeightOfFurnace = table.Column<double>(type: "double precision", nullable: false),
+                    DiameterOfColoshnik = table.Column<double>(type: "double precision", nullable: false),
+                    DiameterOfRaspar = table.Column<double>(type: "double precision", nullable: false),
+                    DiameterOfHorn = table.Column<double>(type: "double precision", nullable: false),
+                    HeightOfHorn = table.Column<double>(type: "double precision", nullable: false),
+                    HeightOfTuyeres = table.Column<double>(type: "double precision", nullable: false),
+                    HeightOfZaplechiks = table.Column<double>(type: "double precision", nullable: false),
+                    HeightOfRaspar = table.Column<double>(type: "double precision", nullable: false),
+                    HeightOfShaft = table.Column<double>(type: "double precision", nullable: false),
+                    HeightOfColoshnik = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -195,6 +220,9 @@ namespace TeploAPI.Migrations
         {
             migrationBuilder.DropTable(
                 name: "CokeCunsumptionReferences");
+
+            migrationBuilder.DropTable(
+                name: "FurnaceBases");
 
             migrationBuilder.DropTable(
                 name: "Furnaces");

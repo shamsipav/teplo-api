@@ -19,9 +19,9 @@ namespace TeploAPI.Controllers
     public class BaseController : Controller
     {
         private IFurnaceService _furnaceService;
-        private IValidator<Furnace> _validator;
+        private IValidator<FurnaceBase> _validator;
         private TeploDBContext _context;
-        public BaseController(TeploDBContext context, IValidator<Furnace> validator, IFurnaceService furnaceService)
+        public BaseController(TeploDBContext context, IValidator<FurnaceBase> validator, IFurnaceService furnaceService)
         {
             _context = context;
             _validator = validator;
@@ -36,19 +36,19 @@ namespace TeploAPI.Controllers
         /// <param name="save">Сохранение варианта исзодных данных</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> PostAsync(Furnace furnace, bool save)
+        public async Task<IActionResult> PostAsync(FurnaceBase furnaceBase, bool save)
         {
-            ValidationResult validationResult = await _validator.ValidateAsync(furnace);
+            ValidationResult validationResult = await _validator.ValidateAsync(furnaceBase);
 
             if (!validationResult.IsValid)
                 return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
             // TODO: Вынести логику сохранения вариантов в отдельный сервис.
-            if (save == false && furnace.Id > 0)
+            if (save == false && furnaceBase.Id > 0)
             {
-                var updatedFurnaceId = await _furnaceService.UpdateFurnaceAsync(furnace);
+                var updatedFurnaceId = await _furnaceService.UpdateFurnaceAsync(furnaceBase);
                 if (updatedFurnaceId == 0)
-                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить сохраненный вариант исходных данных с идентификатором id = '{furnace.Id}'" });
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить сохраненный вариант исходных данных с идентификатором id = '{furnaceBase.Id}'" });
             }
 
             if (save)
@@ -57,10 +57,12 @@ namespace TeploAPI.Controllers
                 if (uid == 0)
                     return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
-                var savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnace, uid);
+                var savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnaceBase, uid);
                 if (savedFurnaceId == 0)
                     return StatusCode(500, new Response { ErrorMessage = $"Не удалось сохранить новый вариант исходных данных" });
             }
+
+            await UpdateInputDataByFurnace(furnaceBase);
 
             // TODO: Возможно, стоит вынести инициализацию сервиса.
             CalculateService calculate = new CalculateService();
@@ -69,7 +71,7 @@ namespace TeploAPI.Controllers
 
             try
             {
-                calculateResult = calculate.СalculateThermalRegime(furnace);
+                calculateResult = calculate.СalculateThermalRegime(furnaceBase);
             }
             catch (Exception ex)
             {
@@ -77,7 +79,7 @@ namespace TeploAPI.Controllers
                 return StatusCode(500, new Response { ErrorMessage = $"Не удалось выполнить расчет в базовом периоде: {ex}" });
             }
 
-            var result = new ResultViewModel { Input = furnace, Result = calculateResult };
+            var result = new ResultViewModel { Input = furnaceBase, Result = calculateResult };
 
             return Ok(new Response { IsSuccess = true, Result = result });
         }
@@ -88,6 +90,7 @@ namespace TeploAPI.Controllers
         /// <param name="basePeriodId">Идентификатор базового периода</param>
         /// <param name="comparativePeriodId">Идентификатор сравнительного периода</param>
         /// <returns></returns>
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> ComparisonAsync(int basePeriodId, int comparativePeriodId)
         {
@@ -103,13 +106,13 @@ namespace TeploAPI.Controllers
             CalculateService calculate = new CalculateService();
 
             // Получение наборов исходных данных для двух периодов.
-            var basePeriodFurnace = new Furnace();
-            var comparativePeriodFurnance = new Furnace();
+            var basePeriodFurnace = new FurnaceBase();
+            var comparativePeriodFurnance = new FurnaceBase();
 
             try
             {
-                basePeriodFurnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == basePeriodId);
-                comparativePeriodFurnance = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == comparativePeriodId);
+                basePeriodFurnace = await _context.FurnaceBases.AsNoTracking().FirstOrDefaultAsync(f => f.Id == basePeriodId);
+                comparativePeriodFurnance = await _context.FurnaceBases.AsNoTracking().FirstOrDefaultAsync(f => f.Id == comparativePeriodId);
             }
             catch (Exception ex)
             {
@@ -124,6 +127,7 @@ namespace TeploAPI.Controllers
             {
                 try
                 {
+                    await UpdateInputDataByFurnace(basePeriodFurnace);
                     calculateBaseResult = calculate.СalculateThermalRegime(basePeriodFurnace);
                 }
                 catch (Exception ex)
@@ -146,6 +150,7 @@ namespace TeploAPI.Controllers
             {
                 try
                 {
+                    await UpdateInputDataByFurnace(comparativePeriodFurnance);
                     calculateComparativeResult = calculate.СalculateThermalRegime(comparativePeriodFurnance);
                 }
                 catch (Exception ex)
@@ -165,6 +170,45 @@ namespace TeploAPI.Controllers
             var comparison = new UnionResultViewModel { BaseResult = baseResult, ComparativeResult = comparativeResult };
 
             return Ok(new Response { IsSuccess = true, Result = comparison });
+        }
+
+        // TODO: Вынести в отдельный класс (дублирование кода в ProjectController)
+        private async Task UpdateInputDataByFurnace(FurnaceBase furnaceBase)
+        {
+            var furnace = new Furnace();
+
+            int uid = int.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
+            if (uid == 0)
+                Log.Error($"HTTP POST api/base PostAsync: Не удалось найти идентификатор пользователя в Claims");
+
+            try
+            {
+                furnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.NumberOfFurnace == furnaceBase.NumberOfFurnace);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"HTTP POST api/base PostAsync: Не удалось получить данные о печи №{furnaceBase.NumberOfFurnace}: {ex}");
+            }
+
+            if (furnace != null)
+            {
+                furnaceBase.NumberOfFurnace = furnace.NumberOfFurnace;
+                furnaceBase.UsefulVolumeOfFurnace = furnace.UsefulVolumeOfFurnace;
+                furnaceBase.UsefulHeightOfFurnace = furnace.UsefulHeightOfFurnace;
+                furnaceBase.DiameterOfColoshnik = furnace.DiameterOfColoshnik;
+                furnaceBase.DiameterOfRaspar = furnace.DiameterOfRaspar;
+                furnaceBase.DiameterOfHorn = furnace.DiameterOfHorn;
+                furnaceBase.HeightOfHorn = furnace.HeightOfHorn;
+                furnaceBase.HeightOfTuyeres = furnace.HeightOfTuyeres;
+                furnaceBase.HeightOfZaplechiks = furnace.HeightOfZaplechiks;
+                furnaceBase.HeightOfRaspar = furnace.HeightOfRaspar;
+                furnaceBase.HeightOfShaft = furnace.HeightOfShaft;
+                furnaceBase.HeightOfColoshnik = furnace.HeightOfColoshnik;
+            }
+            else
+            {
+                Log.Error($"HTTP POST api/base PostAsync: Данные о печи №{furnaceBase.NumberOfFurnace})");
+            }
         }
     }
 }

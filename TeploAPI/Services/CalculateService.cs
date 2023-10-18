@@ -8,7 +8,7 @@ namespace TeploAPI.Services
     /// </summary>
     public class CalculateService
     {
-        public Result СalculateThermalRegime(Furnace input)
+        public Result СalculateThermalRegime(FurnaceBase input)
         {
             var result = new Result();
 
@@ -80,7 +80,7 @@ namespace TeploAPI.Services
         }
 
         // TODO: Refactoring.
-        public ProjectDataViewModel CalculateProjectThermalRegime(Furnace input, FurnaceProject project, Reference reference)
+        public ProjectDataViewModel CalculateProjectThermalRegime(FurnaceBase input, FurnaceProject project, Reference reference)
         {
             double cokeConsumption = input.SpecificConsumptionOfCoke;
             double furnanceCapacity = input.DailyСapacityOfFurnace;

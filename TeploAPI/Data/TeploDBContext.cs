@@ -8,6 +8,7 @@ namespace TeploAPI.Data
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Furnace> Furnaces { get; set; }
+        public DbSet<FurnaceBase> FurnaceBases { get; set; }
         public DbSet<Material> Materials { get; set; }
         public DbSet<CokeCunsumptionReference> CokeCunsumptionReferences { get; set; }
         public DbSet<FurnaceCapacityReference> FurnanceCapacityReferences { get; set; }

@@ -4,7 +4,7 @@ namespace TeploAPI.Interfaces
 {
     public interface IFurnaceService
     {
-        Task<int> UpdateFurnaceAsync(Furnace furnace);
-        Task<int> SaveFurnaceAsync(Furnace furnace, int userId);
+        Task<int> UpdateFurnaceAsync(FurnaceBase furnace);
+        Task<int> SaveFurnaceAsync(FurnaceBase furnace, int userId);
     }
 }

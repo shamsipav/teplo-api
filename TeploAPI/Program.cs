@@ -86,7 +86,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IFurnaceService, FurnaceService>();
 builder.Services.AddScoped<IReferenceCoefficientsService, ReferenceService>();
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
-builder.Services.AddScoped<IValidator<Furnace>, FurnaceValidator>();
+builder.Services.AddScoped<IValidator<FurnaceBase>, FurnaceValidator>();
 builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();
 
 var app = builder.Build();
@@ -105,7 +105,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseMiddleware<RequestResponseMiddleware>();
+//app.UseMiddleware<RequestResponseMiddleware>();
 
 app.UseHttpsRedirection();
 

@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -34,14 +33,14 @@ namespace TeploAPI.Controllers
             if (uid == 0)
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
-            var basePeriodFurnaceData = new Furnace();
-            var basePeriodFurnaceDataClear = new Furnace();
+            var basePeriodFurnaceData = new FurnaceBase();
+            var basePeriodFurnaceDataClear = new FurnaceBase();
 
             try
             {
                 // TODO: Бессмысленное повторное обращение?
-                basePeriodFurnaceData = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(d => d.Id == inputDataId);
-                basePeriodFurnaceDataClear = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(d => d.Id == inputDataId);
+                basePeriodFurnaceData = await _context.FurnaceBases.AsNoTracking().FirstOrDefaultAsync(d => d.Id == inputDataId);
+                basePeriodFurnaceDataClear = await _context.FurnaceBases.AsNoTracking().FirstOrDefaultAsync(d => d.Id == inputDataId);
             }
             catch (Exception ex)
             {
@@ -91,7 +90,10 @@ namespace TeploAPI.Controllers
 
                 try
                 {
+                    await UpdateInputDataByFurnace(basePeriodFurnaceDataClear);
                     baseResultData = calculate.СalculateThermalRegime(basePeriodFurnaceDataClear);
+                    
+                    await UpdateInputDataByFurnace(basePeriodFurnaceData);
                     projectResultData = calculate.СalculateThermalRegime(basePeriodFurnaceData);
                 }
                 catch (Exception ex)
@@ -109,6 +111,45 @@ namespace TeploAPI.Controllers
             }
 
             return NotFound(new Response { ErrorMessage = "Не удалось найти информацию об варианте расчета" });
+        }
+
+        // TODO: Вынести в отдельный класс (дублирование кода в BaseController)
+        private async Task UpdateInputDataByFurnace(FurnaceBase furnaceBase)
+        {
+            var furnace = new Furnace();
+
+            int uid = int.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
+            if (uid == 0)
+                Log.Error($"HTTP POST api/base PostAsync: Не удалось найти идентификатор пользователя в Claims");
+
+            try
+            {
+                furnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.NumberOfFurnace == furnaceBase.NumberOfFurnace);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"HTTP POST api/base PostAsync: Не удалось получить данные о печи №{furnaceBase.NumberOfFurnace}: {ex}");
+            }
+
+            if (furnace != null)
+            {
+                furnaceBase.NumberOfFurnace = furnace.NumberOfFurnace;
+                furnaceBase.UsefulVolumeOfFurnace = furnace.UsefulVolumeOfFurnace;
+                furnaceBase.UsefulHeightOfFurnace = furnace.UsefulHeightOfFurnace;
+                furnaceBase.DiameterOfColoshnik = furnace.DiameterOfColoshnik;
+                furnaceBase.DiameterOfRaspar = furnace.DiameterOfRaspar;
+                furnaceBase.DiameterOfHorn = furnace.DiameterOfHorn;
+                furnaceBase.HeightOfHorn = furnace.HeightOfHorn;
+                furnaceBase.HeightOfTuyeres = furnace.HeightOfTuyeres;
+                furnaceBase.HeightOfZaplechiks = furnace.HeightOfZaplechiks;
+                furnaceBase.HeightOfRaspar = furnace.HeightOfRaspar;
+                furnaceBase.HeightOfShaft = furnace.HeightOfShaft;
+                furnaceBase.HeightOfColoshnik = furnace.HeightOfColoshnik;
+            }
+            else
+            {
+                Log.Error($"HTTP POST api/base PostAsync: Данные о печи №{furnaceBase.NumberOfFurnace})");
+            }
         }
     }
 }

@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:     
+  postgres:
+    container_name: postgres-teplo
+    hostname: postgres
+    image: postgres:12.7
+    environment:
+      POSTGRES_PASSWORD: postgresroot
+      POSTGRES_USER: postgres
+      POSTGRES_DB: teplo
+    ports:
+      - "0.0.0.0:5432:5432"
+
+  web:
+    container_name: teplo-api
+    hostname: api
+    build: ./
+    ports:
+      - "0.0.0.0:5003:5003"

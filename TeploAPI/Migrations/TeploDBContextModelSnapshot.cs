@@ -137,6 +137,58 @@ namespace TeploAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<double>("DiameterOfColoshnik")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("DiameterOfHorn")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("DiameterOfRaspar")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("HeightOfColoshnik")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("HeightOfHorn")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("HeightOfRaspar")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("HeightOfShaft")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("HeightOfTuyeres")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("HeightOfZaplechiks")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("NumberOfFurnace")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("UsefulHeightOfFurnace")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("UsefulVolumeOfFurnace")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Furnaces");
+                });
+
+            modelBuilder.Entity("TeploAPI.Models.FurnaceBase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
                     b.Property<double>("AcceptedTemperatureOfBackupZone")
                         .HasColumnType("double precision");
 
@@ -242,8 +294,8 @@ namespace TeploAPI.Migrations
                     b.Property<double>("NaturalGasConsumption")
                         .HasColumnType("double precision");
 
-                    b.Property<double>("NumberOfFurnace")
-                        .HasColumnType("double precision");
+                    b.Property<int>("NumberOfFurnace")
+                        .HasColumnType("integer");
 
                     b.Property<double>("NumberOfTuyeres")
                         .HasColumnType("double precision");
@@ -289,7 +341,7 @@ namespace TeploAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Furnaces");
+                    b.ToTable("FurnaceBases");
                 });
 
             modelBuilder.Entity("TeploAPI.Models.FurnaceCapacityReference", b =>
