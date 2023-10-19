@@ -12,9 +12,16 @@ services:
     ports:
       - "0.0.0.0:5432:5432"
 
-  web:
+  api:
     container_name: teplo-api
     hostname: api
-    build: ./
+    build: ./TeploAPI
     ports:
       - "0.0.0.0:5004:5004"
+
+  frontend:
+    build: ./teplo-client
+    ports:
+      - 3000:3000
+    depends_on:
+      - api
