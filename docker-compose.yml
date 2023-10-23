@@ -16,12 +16,23 @@ services:
     container_name: teplo-api
     hostname: api
     build: ./TeploAPI
+    networks:
+      - shared_network
+    links:
+      - frontend
     ports:
       - "0.0.0.0:5004:5004"
 
   frontend:
     build: ./teplo-client
+    networks:
+      - shared_network
+    links:
+      - api
     ports:
       - 3000:3000
     depends_on:
       - api
+
+  networks:
+    shared_network: {}
