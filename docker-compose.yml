@@ -9,9 +9,8 @@ services:
       POSTGRES_PASSWORD: postgresroot
       POSTGRES_USER: postgres
       POSTGRES_DB: teplo
-      POSTGRES_PORT: 5403
     ports:
-      - "0.0.0.0:5403:5403"
+      - "0.0.0.0:5403:5432"
 
   api:
     container_name: teplo-api
