@@ -92,7 +92,7 @@ builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();
 var app = builder.Build();
 
 app.UseCors(builder => builder
-    .WithOrigins("http://0.0.0.0:3000")
+    .WithOrigins("http://0.0.0.0:5173")
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials()
