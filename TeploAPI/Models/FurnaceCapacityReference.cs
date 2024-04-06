@@ -2,11 +2,11 @@
 {
     public class FurnaceCapacityReference
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         // TODO: Возможно, стоит реализовать более корректную связь, чтобы
         // другой пользователь не мог получить варианты исходных данных у данного пользователя.
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Увеличение массовой доли железа в рудной сыпи на 1 %

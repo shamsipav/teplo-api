@@ -5,11 +5,11 @@
         /// <summary>
         /// Первичный ключ
         /// </summary>
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         // TODO: Возможно, стоит реализовать более корректную связь, чтобы
         // другой пользователь не мог получить варианты исходных данных у данного пользователя.
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Название материала

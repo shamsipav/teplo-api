@@ -2,7 +2,7 @@
 using Serilog;
 using TeploAPI.Data;
 using TeploAPI.Interfaces;
-using TeploAPI.Models;
+using TeploAPI.Models.Furnace;
 
 namespace TeploAPI.Services
 {
@@ -19,14 +19,17 @@ namespace TeploAPI.Services
         /// </summary>
         /// <param name="furnace"></param>
         /// <returns></returns>
-        public async Task<int> UpdateFurnaceAsync(FurnaceBase furnace)
+        public async Task<Guid> UpdateFurnaceAsync(FurnaceBaseParam furnace, bool isDaily = false)
         {
             if (furnace != null)
             {
-                var existFurnace = new FurnaceBase();
+                var existFurnace = new FurnaceBaseParam();
                 try
                 {
-                    existFurnace = await _context.FurnaceBases.FirstOrDefaultAsync(f => f.Id == furnace.Id);
+                    if (isDaily)
+                        existFurnace = await _context.DailyInfo.FirstOrDefaultAsync(f => f.Id == furnace.Id);
+                    else
+                        existFurnace = await _context.InputVariants.FirstOrDefaultAsync(f => f.Id == furnace.Id);
 
                     if (existFurnace != null)
                     {
@@ -82,19 +85,19 @@ namespace TeploAPI.Services
 
                         await _context.SaveChangesAsync();
 
-                        return 1;
+                        return existFurnace.Id;
                     }
 
-                    return 0;
+                    return Guid.Empty;
                 }
                 catch (Exception ex)
                 {
                     Log.Error($"FurnaceService UpdateFurnaceAsync: Ошибка обновления сохраненного варианта исходных данных с идентификатором id = '{furnace.Id}': {ex}");
-                    return 0;
+                    return Guid.Empty;
                 }
             }
 
-            return 0;
+            return Guid.Empty;
         }
 
         /// <summary>
@@ -102,28 +105,28 @@ namespace TeploAPI.Services
         /// </summary>
         /// <param name="furnace"></param>
         /// <returns></returns>
-        public async Task<int> SaveFurnaceAsync(FurnaceBase furnace, int userId)
+        public async Task<Guid> SaveFurnaceAsync(FurnaceBaseParam furnace, Guid userId)
         {
             if (furnace != null)
             {
                 try
                 {
-                    furnace.Id = 0;
+                    furnace.Id = Guid.NewGuid();
                     furnace.UserId = userId;
                     furnace.SaveDate = DateTime.Now;
-                    _context.FurnaceBases.Add(furnace);
+                    var savedVariant = _context.InputVariants.Add(furnace);
                     await _context.SaveChangesAsync();
 
-                    return 1;
+                    return savedVariant.Entity.Id;
                 }
                 catch (Exception ex)
                 {
                     Log.Error($"HTTP POST api/base PostAsync: Ошибка сохранения варианта исходных данных: {ex}");
-                    return 0;
+                    return Guid.Empty;
                 }
             }
 
-            return 0;
+            return Guid.Empty;
         }
     }
 }

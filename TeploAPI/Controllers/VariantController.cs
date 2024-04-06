@@ -5,12 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TeploAPI.Data;
 using TeploAPI.Models;
+using TeploAPI.Models.Furnace;
 
 namespace TeploAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class VariantController : Controller
+    public class VariantController : TeploController
     {
         private TeploDBContext _context;
         public VariantController(TeploDBContext context)
@@ -26,14 +27,14 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-            if (uid == 0)
+            Guid uid = GetUserId();
+            if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
-            var variants = new List<FurnaceBase>();
+            var variants = new List<FurnaceBaseParam>();
             try
             {
-                variants = await _context.FurnaceBases.AsNoTracking().Where(f => f.UserId == uid).ToListAsync();
+                variants = await _context.InputVariants.AsNoTracking().Where(f => f.UserId.Equals(uid)).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -51,11 +52,11 @@ namespace TeploAPI.Controllers
         [HttpGet("default")]
         public IActionResult GetDefault()
         {
-            var variant = new FurnaceBase();
+            var variant = new FurnaceBaseParam();
 
             try
             {
-                variant = FurnaceBase.GetDefaultData();
+                variant = FurnaceBaseParam.GetDefaultData();
             }
             catch (Exception ex)
             {
@@ -73,16 +74,16 @@ namespace TeploAPI.Controllers
         /// <param name="variantId"></param>
         /// <returns></returns>
         [Authorize]
-        [HttpDelete("{furnaceId}")]
-        public async Task<IActionResult> DeleteAsync(int? variantId)
+        [HttpDelete("{variantId}")]
+        public async Task<IActionResult> DeleteAsync(string variantId)
         {
             if (variantId != null)
             {
-                var variant = new FurnaceBase();
+                var variant = new FurnaceBaseParam();
 
                 try
                 {
-                    variant = await _context.FurnaceBases.FirstOrDefaultAsync(d => d.Id == variantId);
+                    variant = await _context.InputVariants.FirstOrDefaultAsync(d => d.Id.Equals(Guid.Parse(variantId)));
                 }
                 catch (Exception ex)
                 {
@@ -94,7 +95,7 @@ namespace TeploAPI.Controllers
                 {
                     try
                     {
-                        _context.FurnaceBases.Remove(variant);
+                        _context.InputVariants.Remove(variant);
                         await _context.SaveChangesAsync();
                     }
                     catch (Exception ex)
@@ -103,7 +104,7 @@ namespace TeploAPI.Controllers
                         return StatusCode(500, new Response { ErrorMessage = $"Не удалось удалить вариант исходных данных с идентификатором id = '{variantId}'" });
                     }
 
-                    return Ok(new Response { IsSuccess = true, Result = variant });
+                    return Ok(new Response { IsSuccess = true, Result = variant, SuccessMessage = $"Вариант исходных данных \"{variant.Name}\" удален" });
                 }
 
                 return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию об варианте расчета с идентификатором id = '{variantId}'" });

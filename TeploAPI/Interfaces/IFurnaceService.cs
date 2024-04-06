@@ -1,10 +1,10 @@
-﻿using TeploAPI.Models;
+﻿using TeploAPI.Models.Furnace;
 
 namespace TeploAPI.Interfaces
 {
     public interface IFurnaceService
     {
-        Task<int> UpdateFurnaceAsync(FurnaceBase furnace);
-        Task<int> SaveFurnaceAsync(FurnaceBase furnace, int userId);
+        Task<Guid> UpdateFurnaceAsync(FurnaceBaseParam furnace, bool isDaily = false);
+        Task<Guid> SaveFurnaceAsync(FurnaceBaseParam furnace, Guid userId);
     }
 }

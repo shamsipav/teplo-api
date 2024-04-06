@@ -4,11 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using SweetAPI.Models;
-using SweetAPI.Utils;
 using TeploAPI.Data;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
+using TeploAPI.Models.Furnace;
 using TeploAPI.Services;
 using TeploAPI.ViewModels;
 
@@ -16,53 +15,55 @@ namespace TeploAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class BaseController : Controller
+    public class BaseController : TeploController
     {
         private IFurnaceService _furnaceService;
-        private IValidator<FurnaceBase> _validator;
+        private IValidator<FurnaceBaseParam> _validator;
         private TeploDBContext _context;
-        public BaseController(TeploDBContext context, IValidator<FurnaceBase> validator, IFurnaceService furnaceService)
+        public BaseController(TeploDBContext context, IValidator<FurnaceBaseParam> validator, IFurnaceService furnaceService)
         {
             _context = context;
             _validator = validator;
             _furnaceService = furnaceService;
         }
 
-        // TODO: Добавить названия для сохраненных вариантов исходных данных.
-        // TODO: Добавить класс Response для унификации результатов методов.
         /// <summary>
         /// Получение результатов расчета теплового режима в базовом периоде
         /// </summary>
-        /// <param name="save">Сохранение варианта исзодных данных</param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> PostAsync(FurnaceBase furnaceBase, bool save)
+        public async Task<IActionResult> PostAsync(FurnaceBaseParam furnaceBase, bool save)
         {
             ValidationResult validationResult = await _validator.ValidateAsync(furnaceBase);
 
             if (!validationResult.IsValid)
                 return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
-            // TODO: Вынести логику сохранения вариантов в отдельный сервис.
-            if (save == false && furnaceBase.Id > 0)
+            Guid uid = GetUserId();
+
+            // Обновление существующего варианта исходных данныз
+            if (save == false && !furnaceBase.Id.Equals(Guid.Empty))
             {
-                var updatedFurnaceId = await _furnaceService.UpdateFurnaceAsync(furnaceBase);
-                if (updatedFurnaceId == 0)
+                Guid updatedFurnaceId = await _furnaceService.UpdateFurnaceAsync(furnaceBase);
+                if (updatedFurnaceId.Equals(Guid.Empty))
                     return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить сохраненный вариант исходных данных с идентификатором id = '{furnaceBase.Id}'" });
             }
 
+            // Сохранение нового варианта исходных данныз
             if (save)
             {
-                int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-                if (uid == 0)
+                if (uid.Equals(Guid.Empty))
                     return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
-                var savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnaceBase, uid);
-                if (savedFurnaceId == 0)
+                Guid savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnaceBase, uid);
+                if (savedFurnaceId.Equals(Guid.Empty))
                     return StatusCode(500, new Response { ErrorMessage = $"Не удалось сохранить новый вариант исходных данных" });
             }
 
-            await UpdateInputDataByFurnace(furnaceBase);
+            if (!uid.Equals(Guid.Empty))
+                // TODO: Реализовать более корректную связь
+                // С UI нам пришел только номер доменной печи и данные для расчета (FurnaceBaseParam furnaceBase)
+                // Необходимо к этим данным добавить характеристики доменной печи
+                await UpdateInputDataByFurnace(furnaceBase);
 
             // TODO: Возможно, стоит вынести инициализацию сервиса.
             CalculateService calculate = new CalculateService();
@@ -92,12 +93,12 @@ namespace TeploAPI.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> ComparisonAsync(int basePeriodId, int comparativePeriodId)
+        public async Task<IActionResult> ComparisonAsync(string basePeriodId, string comparativePeriodId)
         {
-            if (basePeriodId == 0)
+            if (string.IsNullOrEmpty(basePeriodId))
                 return BadRequest(new Response { ErrorMessage = "Необходимо указать вариант исходных данных для базового периода" });
 
-            if (comparativePeriodId == 0)
+            if (string.IsNullOrEmpty(comparativePeriodId))
                 return BadRequest(new Response { ErrorMessage = "Необходимо указать вариант исходных данных для сравнительного периода" });
 
             if (basePeriodId == comparativePeriodId)
@@ -106,13 +107,13 @@ namespace TeploAPI.Controllers
             CalculateService calculate = new CalculateService();
 
             // Получение наборов исходных данных для двух периодов.
-            var basePeriodFurnace = new FurnaceBase();
-            var comparativePeriodFurnance = new FurnaceBase();
+            var basePeriodFurnace = new FurnaceBaseParam();
+            var comparativePeriodFurnance = new FurnaceBaseParam();
 
             try
             {
-                basePeriodFurnace = await _context.FurnaceBases.AsNoTracking().FirstOrDefaultAsync(f => f.Id == basePeriodId);
-                comparativePeriodFurnance = await _context.FurnaceBases.AsNoTracking().FirstOrDefaultAsync(f => f.Id == comparativePeriodId);
+                basePeriodFurnace = await _context.InputVariants.AsNoTracking().FirstOrDefaultAsync(f => f.Id.Equals(Guid.Parse(basePeriodId)));
+                comparativePeriodFurnance = await _context.InputVariants.AsNoTracking().FirstOrDefaultAsync(f => f.Id.Equals(Guid.Parse(comparativePeriodId)));
             }
             catch (Exception ex)
             {
@@ -173,17 +174,17 @@ namespace TeploAPI.Controllers
         }
 
         // TODO: Вынести в отдельный класс (дублирование кода в ProjectController)
-        private async Task UpdateInputDataByFurnace(FurnaceBase furnaceBase)
+        /// <summary>
+        /// Добавление к классу с данными для расчета характеристик доменной печи из справочника доменных печей
+        /// </summary>
+        private async Task UpdateInputDataByFurnace(FurnaceBaseParam furnaceBase)
         {
             var furnace = new Furnace();
-
-            int uid = int.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-            if (uid == 0)
-                Log.Error($"HTTP POST api/base PostAsync: Не удалось найти идентификатор пользователя в Claims");
 
             try
             {
                 furnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.NumberOfFurnace == furnaceBase.NumberOfFurnace);
+                Console.WriteLine($"Получена печь {furnace?.NumberOfFurnace}");
             }
             catch (Exception ex)
             {
@@ -207,7 +208,7 @@ namespace TeploAPI.Controllers
             }
             else
             {
-                Log.Error($"HTTP POST api/base PostAsync: Данные о печи №{furnaceBase.NumberOfFurnace})");
+                Log.Error($"HTTP POST api/base PostAsync: Данные о печи №{furnaceBase.NumberOfFurnace}) не найдены");
             }
         }
     }

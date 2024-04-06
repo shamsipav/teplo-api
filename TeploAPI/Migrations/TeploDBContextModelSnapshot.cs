@@ -24,11 +24,9 @@ namespace TeploAPI.Migrations
 
             modelBuilder.Entity("SweetAPI.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Email")
                         .HasColumnType("text");
@@ -55,11 +53,9 @@ namespace TeploAPI.Migrations
 
             modelBuilder.Entity("TeploAPI.Models.CokeCunsumptionReference", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<double>("IncreaseBlastHumidity")
                         .HasColumnType("double precision");
@@ -121,21 +117,19 @@ namespace TeploAPI.Migrations
                     b.Property<double>("TemperatureIncreaseInRangeOf901to1000")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.ToTable("CokeCunsumptionReferences");
                 });
 
-            modelBuilder.Entity("TeploAPI.Models.Furnace", b =>
+            modelBuilder.Entity("TeploAPI.Models.Furnace.Furnace", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<double>("DiameterOfColoshnik")
                         .HasColumnType("double precision");
@@ -173,21 +167,19 @@ namespace TeploAPI.Migrations
                     b.Property<double>("UsefulVolumeOfFurnace")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.ToTable("Furnaces");
                 });
 
-            modelBuilder.Entity("TeploAPI.Models.FurnaceBase", b =>
+            modelBuilder.Entity("TeploAPI.Models.Furnace.FurnaceBaseParam", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<double>("AcceptedTemperatureOfBackupZone")
                         .HasColumnType("double precision");
@@ -251,6 +243,10 @@ namespace TeploAPI.Migrations
 
                     b.Property<double>("DiameterOfRaspar")
                         .HasColumnType("double precision");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<double>("EstablishedLevelOfEmbankment")
                         .HasColumnType("double precision");
@@ -333,24 +329,26 @@ namespace TeploAPI.Migrations
                     b.Property<double>("UsefulVolumeOfFurnace")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<double>("VolatileContentInCoke")
                         .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
-                    b.ToTable("FurnaceBases");
+                    b.ToTable("InputVariants");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("FurnaceBaseParam");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("TeploAPI.Models.FurnaceCapacityReference", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<double>("IncreaseBlastHumidity")
                         .HasColumnType("double precision");
@@ -412,8 +410,8 @@ namespace TeploAPI.Migrations
                     b.Property<double>("TemperatureIncreaseInRangeOf901to1000")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -422,11 +420,9 @@ namespace TeploAPI.Migrations
 
             modelBuilder.Entity("TeploAPI.Models.Material", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<double>("Al2O3")
                         .HasColumnType("double precision");
@@ -479,8 +475,8 @@ namespace TeploAPI.Migrations
                     b.Property<double>("TiO2")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<double>("Zn")
                         .HasColumnType("double precision");
@@ -488,6 +484,16 @@ namespace TeploAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Materials");
+                });
+
+            modelBuilder.Entity("TeploAPI.Models.Furnace.FurnaceDailyInfo", b =>
+                {
+                    b.HasBaseType("TeploAPI.Models.Furnace.FurnaceBaseParam");
+
+                    b.Property<DateTime>("Day")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasDiscriminator().HasValue("FurnaceDailyInfo");
                 });
 #pragma warning restore 612, 618
         }

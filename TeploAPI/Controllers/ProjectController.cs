@@ -5,6 +5,7 @@ using Serilog;
 using TeploAPI.Data;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
+using TeploAPI.Models.Furnace;
 using TeploAPI.Services;
 using TeploAPI.ViewModels;
 
@@ -13,7 +14,7 @@ namespace TeploAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ProjectController : Controller
+    public class ProjectController : TeploController
     {
         private IReferenceCoefficientsService _referenceService;
         private TeploDBContext _context;
@@ -27,20 +28,20 @@ namespace TeploAPI.Controllers
         // TODO: Refactoring.
         // TODO: Стоит поменять inputDataId на basePeriodFurnaceData?
         [HttpPost]
-        public async Task<IActionResult> PostAsync(FurnaceProject projectPeriodFurnaceData, int? inputDataId)
+        public async Task<IActionResult> PostAsync(FurnaceProjectParam projectPeriodFurnaceData, Guid inputDataId)
         {
-            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-            if (uid == 0)
+            Guid uid = GetUserId();
+            if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
-            var basePeriodFurnaceData = new FurnaceBase();
-            var basePeriodFurnaceDataClear = new FurnaceBase();
+            var basePeriodFurnaceData = new FurnaceBaseParam();
+            var basePeriodFurnaceDataClear = new FurnaceBaseParam();
 
             try
             {
                 // TODO: Бессмысленное повторное обращение?
-                basePeriodFurnaceData = await _context.FurnaceBases.AsNoTracking().FirstOrDefaultAsync(d => d.Id == inputDataId);
-                basePeriodFurnaceDataClear = await _context.FurnaceBases.AsNoTracking().FirstOrDefaultAsync(d => d.Id == inputDataId);
+                basePeriodFurnaceData = await _context.InputVariants.AsNoTracking().FirstOrDefaultAsync(d => d.Id.Equals(inputDataId));
+                basePeriodFurnaceDataClear = await _context.InputVariants.AsNoTracking().FirstOrDefaultAsync(d => d.Id.Equals(inputDataId));
             }
             catch (Exception ex)
             {
@@ -92,7 +93,7 @@ namespace TeploAPI.Controllers
                 {
                     await UpdateInputDataByFurnace(basePeriodFurnaceDataClear);
                     baseResultData = calculate.СalculateThermalRegime(basePeriodFurnaceDataClear);
-                    
+
                     await UpdateInputDataByFurnace(basePeriodFurnaceData);
                     projectResultData = calculate.СalculateThermalRegime(basePeriodFurnaceData);
                 }
@@ -114,7 +115,10 @@ namespace TeploAPI.Controllers
         }
 
         // TODO: Вынести в отдельный класс (дублирование кода в BaseController)
-        private async Task UpdateInputDataByFurnace(FurnaceBase furnaceBase)
+        /// <summary>
+        /// Добавление к классу с данными для расчета характеристик доменной печи из справочника доменных печей
+        /// </summary>
+        private async Task UpdateInputDataByFurnace(FurnaceBaseParam furnaceBase)
         {
             var furnace = new Furnace();
 
@@ -148,7 +152,7 @@ namespace TeploAPI.Controllers
             }
             else
             {
-                Log.Error($"HTTP POST api/base PostAsync: Данные о печи №{furnaceBase.NumberOfFurnace})");
+                Log.Error($"HTTP POST api/base PostAsync: Данные о печи №{furnaceBase.NumberOfFurnace}) не найдены");
             }
         }
     }

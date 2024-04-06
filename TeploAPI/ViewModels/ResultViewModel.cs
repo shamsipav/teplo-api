@@ -1,4 +1,5 @@
 ﻿using TeploAPI.Models;
+using TeploAPI.Models.Furnace;
 
 namespace TeploAPI.ViewModels
 {
@@ -7,7 +8,7 @@ namespace TeploAPI.ViewModels
     /// </summary>
     public class ResultViewModel
     {
-        public FurnaceBase? Input { get; set; }
+        public FurnaceBaseParam? Input { get; set; }
         public Result? Result { get; set; }
     }
 }

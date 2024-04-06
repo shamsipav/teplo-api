@@ -13,7 +13,7 @@ namespace TeploAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class MaterialController : Controller
+    public class MaterialController : TeploController
     {
         private IValidator<Material> _validator;
         private TeploDBContext _context;
@@ -30,14 +30,14 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-            if (uid == 0)
+            Guid uid = GetUserId();
+            if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
             var materials = new List<Material>();
             try
             {
-                materials = await _context.Materials.AsNoTracking().Where(m => m.UserId == uid).ToListAsync();
+                materials = await _context.Materials.AsNoTracking().Where(m => m.UserId.Equals(uid)).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -56,8 +56,8 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(Material material)
         {
-            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-            if (uid == 0)
+            Guid uid = GetUserId();
+            if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
             if (material == null)
@@ -155,12 +155,12 @@ namespace TeploAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(int? id)
+        public async Task<IActionResult> GetByIdAsync(string? id)
         {
             var material = new Material();
             try
             {
-                material = await _context.Materials.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
+                material = await _context.Materials.AsNoTracking().FirstOrDefaultAsync(m => m.Id.Equals(Guid.Parse(id)));
             }
             catch (Exception ex)
             {
@@ -182,7 +182,7 @@ namespace TeploAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(int? id)
+        public async Task<IActionResult> DeleteAsync(string? id)
         {
             if (id != null)
             {
@@ -190,7 +190,7 @@ namespace TeploAPI.Controllers
 
                 try
                 {
-                    material = await _context.Materials.FirstOrDefaultAsync(d => d.Id == id);
+                    material = await _context.Materials.FirstOrDefaultAsync(d => d.Id.Equals(Guid.Parse(id)));
                 }
                 catch (Exception ex)
                 {

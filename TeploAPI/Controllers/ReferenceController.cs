@@ -11,7 +11,7 @@ namespace TeploAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ReferenceController : Controller
+    public class ReferenceController : TeploController
     {
         private IReferenceCoefficientsService _referenceService;
         private TeploDBContext _context;
@@ -29,8 +29,8 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-            if (uid == 0)
+            Guid uid = GetUserId();
+            if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
             var reference = await _referenceService.GetCoefficientsReferenceByUserIdAsync(uid);
@@ -48,8 +48,8 @@ namespace TeploAPI.Controllers
         {
             if (reference.CokeCunsumptionReference != null && reference.FurnaceCapacityReference != null)
             {
-                int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-                if (uid == 0)
+                Guid uid = GetUserId();
+                if (uid.Equals(Guid.Empty))
                     return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
                 var existReference = await _referenceService.GetCoefficientsReferenceByUserIdAsync(uid);

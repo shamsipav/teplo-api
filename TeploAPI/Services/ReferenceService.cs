@@ -3,6 +3,7 @@ using Serilog;
 using TeploAPI.Data;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
+using TeploAPI.Models.Furnace;
 
 namespace TeploAPI.Services
 {
@@ -19,15 +20,15 @@ namespace TeploAPI.Services
         /// </summary>
         /// <param name="uid"></param>
         /// <returns></returns>
-        public async Task<Reference?> GetCoefficientsReferenceByUserIdAsync(int uid)
+        public async Task<Reference?> GetCoefficientsReferenceByUserIdAsync(Guid uid)
         {
             var cokeCoefficients = new CokeCunsumptionReference();
             var furnanceCapacityCoefficients = new FurnaceCapacityReference();
 
             try
             {
-                cokeCoefficients = await _context.CokeCunsumptionReferences.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == uid);
-                furnanceCapacityCoefficients = await _context.FurnanceCapacityReferences.AsNoTracking().FirstOrDefaultAsync(f => f.UserId == uid);
+                cokeCoefficients = await _context.CokeCunsumptionReferences.AsNoTracking().FirstOrDefaultAsync(c => c.UserId.Equals(uid));
+                furnanceCapacityCoefficients = await _context.FurnanceCapacityReferences.AsNoTracking().FirstOrDefaultAsync(f => f.UserId.Equals(uid));
 
                 return new Reference { CokeCunsumptionReference = cokeCoefficients, FurnaceCapacityReference = furnanceCapacityCoefficients };
             }

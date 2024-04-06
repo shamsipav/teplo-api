@@ -5,13 +5,14 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TeploAPI.Data;
 using TeploAPI.Models;
+using TeploAPI.Models.Furnace;
 
 namespace TeploAPI.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class FurnaceController : Controller
+    public class FurnaceController : TeploController
     {
         // TODO: Добавить валидатор!
         private TeploDBContext _context;
@@ -27,14 +28,14 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-            if (uid == 0)
+            Guid uid = GetUserId();
+            if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
             var furnaces = new List<Furnace>();
             try
             {
-                furnaces = await _context.Furnaces.AsNoTracking().Where(m => m.UserId == uid).ToListAsync();
+                furnaces = await _context.Furnaces.AsNoTracking().Where(m => m.UserId.Equals(uid)).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -53,8 +54,8 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(Furnace furnace)
         {
-            int uid = Int32.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-            if (uid == 0)
+            Guid uid = GetUserId();
+            if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
             if (furnace == null)
@@ -144,12 +145,12 @@ namespace TeploAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(int? id)
+        public async Task<IActionResult> GetByIdAsync(string? id)
         {
             var furnace = new Furnace();
             try
             {
-                furnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
+                furnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(m => m.Id.Equals(Guid.Parse(id)));
             }
             catch (Exception ex)
             {
@@ -171,7 +172,7 @@ namespace TeploAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(int? id)
+        public async Task<IActionResult> DeleteAsync(string? id)
         {
             if (id != null)
             {
@@ -179,7 +180,7 @@ namespace TeploAPI.Controllers
 
                 try
                 {
-                    furnace = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id == id);
+                    furnace = await _context.Furnaces.FirstOrDefaultAsync(d => d.Id.Equals(Guid.Parse(id)));
                 }
                 catch (Exception ex)
                 {

@@ -1,15 +1,16 @@
 ﻿using FluentValidation;
+using TeploAPI.Models.Furnace;
 
 namespace TeploAPI.Models.Validators
 {
-    public class FurnaceValidator : AbstractValidator<FurnaceBase>
+    public class FurnaceValidator : AbstractValidator<FurnaceBaseParam>
     {
         // TODO: Провалидировать все значения
         public FurnaceValidator()
         {
-            RuleFor(x => x.NumberOfFurnace)
-                .NotEmpty().WithMessage("'NumberOfFurnace' Номер доменной печи является обязательным")
-                .GreaterThan(0).WithMessage("'NumberOfFurnace' Номер доменной печи не может быть отрицательным");
+            //RuleFor(x => x.NumberOfFurnace)
+            //    .NotEmpty().WithMessage("'NumberOfFurnace' Номер доменной печи является обязательным")
+            //    .GreaterThan(0).WithMessage("'NumberOfFurnace' Номер доменной печи не может быть отрицательным");
 
             //RuleFor(x => x.UsefulVolumeOfFurnace)
             //    .NotEmpty().WithMessage("'UsefulVolumeOfFurnace' Полезный объем печи, м3 является обязательным")

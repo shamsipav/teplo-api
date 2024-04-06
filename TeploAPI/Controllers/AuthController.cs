@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using TeploAPI.Data;
 using TeploAPI.Models;
+using TeploAPI.Models.Furnace;
 using TeploAPI.Utils;
 
 namespace TeploAPI.Controllers
@@ -19,7 +20,7 @@ namespace TeploAPI.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController : TeploController
     {
         private IValidator<User> _validator;
         private readonly TeploDBContext _context;
@@ -83,11 +84,30 @@ namespace TeploAPI.Controllers
                 var cokeCoefficients = CokeCunsumptionReference.GetDefaultData();
                 var furnaceCoefficients = FurnaceCapacityReference.GetDefaultData();
 
+                var defaultFurnaceParam = FurnaceBaseParam.GetDefaultData();
+                var defaultFurnace = new Furnace
+                {
+                    NumberOfFurnace = defaultFurnaceParam.NumberOfFurnace,
+                    UsefulVolumeOfFurnace = defaultFurnaceParam.UsefulVolumeOfFurnace,
+                    UsefulHeightOfFurnace = defaultFurnaceParam.UsefulHeightOfFurnace,
+                    DiameterOfColoshnik = defaultFurnaceParam.DiameterOfColoshnik,
+                    DiameterOfRaspar = defaultFurnaceParam.DiameterOfRaspar,
+                    DiameterOfHorn = defaultFurnaceParam.DiameterOfHorn,
+                    HeightOfHorn = defaultFurnaceParam.HeightOfHorn,
+                    HeightOfTuyeres = defaultFurnaceParam.HeightOfTuyeres,
+                    HeightOfZaplechiks = defaultFurnaceParam.HeightOfZaplechiks,
+                    HeightOfRaspar = defaultFurnaceParam.HeightOfRaspar,
+                    HeightOfShaft = defaultFurnaceParam.HeightOfShaft,
+                    HeightOfColoshnik = defaultFurnaceParam.HeightOfColoshnik
+                };
+
                 cokeCoefficients.UserId = user.Id;
                 furnaceCoefficients.UserId = user.Id;
+                defaultFurnace.UserId = user.Id;
 
                 await _context.CokeCunsumptionReferences.AddAsync(cokeCoefficients);
                 await _context.FurnanceCapacityReferences.AddAsync(furnaceCoefficients);
+                await _context.Furnaces.AddAsync(defaultFurnace);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)

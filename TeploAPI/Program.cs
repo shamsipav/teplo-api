@@ -11,6 +11,7 @@ using TeploAPI.Data;
 using TeploAPI.Interfaces;
 using TeploAPI.Middlewares;
 using TeploAPI.Models;
+using TeploAPI.Models.Furnace;
 using TeploAPI.Models.Validators;
 using TeploAPI.Services;
 using TeploAPI.Utils;
@@ -86,7 +87,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IFurnaceService, FurnaceService>();
 builder.Services.AddScoped<IReferenceCoefficientsService, ReferenceService>();
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
-builder.Services.AddScoped<IValidator<FurnaceBase>, FurnaceValidator>();
+builder.Services.AddScoped<IValidator<FurnaceBaseParam>, FurnaceValidator>();
 builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();
 
 var app = builder.Build();

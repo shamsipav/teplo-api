@@ -1,10 +1,10 @@
-﻿using TeploAPI.Models;
+﻿using TeploAPI.Models.Furnace;
 
 namespace TeploAPI.ViewModels
 {
     public class ProjectDataViewModel
     {
-        public FurnaceBase? ChangedInputData { get; set; }
-        public FurnaceProject? ProjectInputData { get; set; }
+        public FurnaceBaseParam? ChangedInputData { get; set; }
+        public FurnaceProjectParam? ProjectInputData { get; set; }
     }
 }

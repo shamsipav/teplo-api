@@ -4,6 +4,6 @@ namespace TeploAPI.Interfaces
 {
     public interface IReferenceCoefficientsService
     {
-        Task<Reference?> GetCoefficientsReferenceByUserIdAsync(int uid);
+        Task<Reference?> GetCoefficientsReferenceByUserIdAsync(Guid uid);
     }
 }
