@@ -1,9 +1,12 @@
-﻿namespace TeploAPI.Models.Furnace
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TeploAPI.Models.Furnace
 {
     /// <summary>
     /// Класс, описывающий характеристики доменной печи, используемые для расчетов
     /// Нужен для хранения вариантов исходных данных
     /// </summary>
+    [Table("InputVariants")]
     public class FurnaceBaseParam : FurnaceBase
     {
         public Guid Id { get; set; }
