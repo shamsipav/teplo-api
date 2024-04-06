@@ -40,8 +40,8 @@ namespace TeploAPI.Controllers
             try
             {
                 // TODO: Бессмысленное повторное обращение?
-                basePeriodFurnaceData = await _context.InputVariants.AsNoTracking().FirstOrDefaultAsync(d => d.Id.Equals(inputDataId));
-                basePeriodFurnaceDataClear = await _context.InputVariants.AsNoTracking().FirstOrDefaultAsync(d => d.Id.Equals(inputDataId));
+                basePeriodFurnaceData = await _context.FurnacesWorkParams.AsNoTracking().FirstOrDefaultAsync(d => d.Id.Equals(inputDataId));
+                basePeriodFurnaceDataClear = await _context.FurnacesWorkParams.AsNoTracking().FirstOrDefaultAsync(d => d.Id.Equals(inputDataId));
             }
             catch (Exception ex)
             {

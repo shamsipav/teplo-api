@@ -4,9 +4,8 @@ namespace TeploAPI.Models.Furnace
 {
     /// <summary>
     /// Класс, описывающий характеристики доменной печи, используемые для расчетов
-    /// Нужен для хранения вариантов исходных данных
+    /// Нужен для хранения вариантов исходных данных, а также посуточной информации о работе доменной печи
     /// </summary>
-    [Table("InputVariants")]
     public class FurnaceBaseParam : FurnaceBase
     {
         public Guid Id { get; set; }
@@ -14,6 +13,11 @@ namespace TeploAPI.Models.Furnace
         public Guid UserId { get; set; }
         
         public Guid FurnaceId { get; set; }
+        
+        /// <summary>
+        /// Сутки, за которые печь характеризуется всеми параметрами
+        /// </summary>
+        public DateTime Day { get; set; }
 
         /// <summary>
         /// Название исходных данных для доменной печи

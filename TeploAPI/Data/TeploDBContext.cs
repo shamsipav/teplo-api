@@ -13,13 +13,10 @@ namespace TeploAPI.Data
         /// </summary>
         public DbSet<Furnace> Furnaces { get; set; }
         /// <summary>
-        /// Посуточная информация о работе доменных печей
+        /// Варианты исходных данных + посуточная информация о работе доменных печей (FurnaceBase)
+        /// На текущий момент разделение происходит путём анализа наличия значения у свойства Day
         /// </summary>
-        public DbSet<FurnaceDailyInfo> DailyInfo { get; set; }
-        /// <summary>
-        /// Варианты исходных данных (FurnaceBase)
-        /// </summary>
-        public DbSet<FurnaceBaseParam> InputVariants { get; set; }
+        public DbSet<FurnaceBaseParam> FurnacesWorkParams { get; set; }
         /// <summary>
         /// Справочных шихтовых материалов
         /// </summary>

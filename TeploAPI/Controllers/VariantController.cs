@@ -34,7 +34,7 @@ namespace TeploAPI.Controllers
             var variants = new List<FurnaceBaseParam>();
             try
             {
-                variants = await _context.InputVariants.AsNoTracking().Where(f => f.UserId.Equals(uid)).ToListAsync();
+                variants = await _context.FurnacesWorkParams.AsNoTracking().Where(f => f.UserId.Equals(uid)).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -83,7 +83,7 @@ namespace TeploAPI.Controllers
 
                 try
                 {
-                    variant = await _context.InputVariants.FirstOrDefaultAsync(d => d.Id.Equals(Guid.Parse(variantId)));
+                    variant = await _context.FurnacesWorkParams.FirstOrDefaultAsync(d => d.Id.Equals(Guid.Parse(variantId)));
                 }
                 catch (Exception ex)
                 {
@@ -95,7 +95,7 @@ namespace TeploAPI.Controllers
                 {
                     try
                     {
-                        _context.InputVariants.Remove(variant);
+                        _context.FurnacesWorkParams.Remove(variant);
                         await _context.SaveChangesAsync();
                     }
                     catch (Exception ex)

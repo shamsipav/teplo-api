@@ -27,9 +27,9 @@ namespace TeploAPI.Services
                 try
                 {
                     if (isDaily)
-                        existFurnace = await _context.DailyInfo.FirstOrDefaultAsync(f => f.Id == furnace.Id);
+                        existFurnace = await _context.FurnacesWorkParams.FirstOrDefaultAsync(f => f.Id == furnace.Id);
                     else
-                        existFurnace = await _context.InputVariants.FirstOrDefaultAsync(f => f.Id == furnace.Id);
+                        existFurnace = await _context.FurnacesWorkParams.FirstOrDefaultAsync(f => f.Id == furnace.Id);
 
                     if (existFurnace != null)
                     {
@@ -114,7 +114,7 @@ namespace TeploAPI.Services
                     furnace.Id = Guid.NewGuid();
                     furnace.UserId = userId;
                     furnace.SaveDate = DateTime.Now;
-                    var savedVariant = _context.InputVariants.Add(furnace);
+                    var savedVariant = _context.FurnacesWorkParams.Add(furnace);
                     await _context.SaveChangesAsync();
 
                     return savedVariant.Entity.Id;

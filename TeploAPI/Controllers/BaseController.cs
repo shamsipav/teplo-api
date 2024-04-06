@@ -111,8 +111,8 @@ namespace TeploAPI.Controllers
 
             try
             {
-                basePeriodFurnace = await _context.InputVariants.AsNoTracking().FirstOrDefaultAsync(f => f.Id.Equals(Guid.Parse(basePeriodId)));
-                comparativePeriodFurnance = await _context.InputVariants.AsNoTracking().FirstOrDefaultAsync(f => f.Id.Equals(Guid.Parse(comparativePeriodId)));
+                basePeriodFurnace = await _context.FurnacesWorkParams.AsNoTracking().FirstOrDefaultAsync(f => f.Id.Equals(Guid.Parse(basePeriodId)));
+                comparativePeriodFurnance = await _context.FurnacesWorkParams.AsNoTracking().FirstOrDefaultAsync(f => f.Id.Equals(Guid.Parse(comparativePeriodId)));
             }
             catch (Exception ex)
             {

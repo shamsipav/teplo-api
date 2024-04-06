@@ -34,10 +34,10 @@ namespace TeploAPI.Controllers
         {
             Guid uid = GetUserId();
 
-            var furnaces = new List<FurnaceDailyInfo>();
+            var furnaces = new List<FurnaceBaseParam>();
             try
             {
-                furnaces = await _context.DailyInfo.AsNoTracking().Where(m => m.UserId.Equals(uid)).ToListAsync();
+                furnaces = await _context.FurnacesWorkParams.AsNoTracking().Where(m => m.UserId.Equals(uid)).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -56,10 +56,10 @@ namespace TeploAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string? id)
         {
-            var dailyInfo = new FurnaceDailyInfo();
+            var dailyInfo = new FurnaceBaseParam();
             try
             {
-                dailyInfo = await _context.DailyInfo.AsNoTracking().FirstOrDefaultAsync(m => m.Id.Equals(Guid.Parse(id)));
+                dailyInfo = await _context.FurnacesWorkParams.AsNoTracking().FirstOrDefaultAsync(m => m.Id.Equals(Guid.Parse(id)));
             }
             catch (Exception ex)
             {
@@ -81,7 +81,7 @@ namespace TeploAPI.Controllers
         /// <param name="material"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> CreateAsync(FurnaceDailyInfo dailyInfo)
+        public async Task<IActionResult> CreateAsync(FurnaceBaseParam dailyInfo)
         {
             ValidationResult validationResult = await _validator.ValidateAsync(dailyInfo);
             
@@ -96,7 +96,7 @@ namespace TeploAPI.Controllers
                 return BadRequest(new Response { ErrorMessage = "Отсутсвуют значения для добавления печи в справочник" });
             
             // Если пришла дата, которая уже была для конкретной печи - обновляем суточную информацию
-            var existDaily = await _context.DailyInfo
+            var existDaily = await _context.FurnacesWorkParams
                 .AsNoTracking()
                 .FirstOrDefaultAsync(f => f.FurnaceId == dailyInfo.FurnaceId && f.Day == dailyInfo.Day);
 
@@ -112,7 +112,7 @@ namespace TeploAPI.Controllers
                 {
                     dailyInfo.Id = Guid.NewGuid();
                     dailyInfo.UserId = uid;
-                    await _context.DailyInfo.AddAsync(dailyInfo);
+                    await _context.FurnacesWorkParams.AddAsync(dailyInfo);
                     await _context.SaveChangesAsync();
                 }
                 catch (Exception ex)
