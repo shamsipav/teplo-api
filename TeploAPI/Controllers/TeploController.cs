@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TeploAPI.Controllers
 {
@@ -6,7 +7,8 @@ namespace TeploAPI.Controllers
     {
         public Guid GetUserId()
         {
-            if (Guid.TryParse(User?.Claims?.FirstOrDefault(x => x.Type == "uid")?.Value, out Guid parsedGuid))
+            string? userId =  User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(userId, out Guid parsedGuid))
                 return parsedGuid;
             else
                 return Guid.Empty;

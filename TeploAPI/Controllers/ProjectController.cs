@@ -122,13 +122,10 @@ namespace TeploAPI.Controllers
         {
             var furnace = new Furnace();
 
-            int uid = int.Parse(User.Claims.FirstOrDefault(x => x.Type == "uid").Value);
-            if (uid == 0)
-                Log.Error($"HTTP POST api/base PostAsync: Не удалось найти идентификатор пользователя в Claims");
-
             try
             {
-                furnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.NumberOfFurnace == furnaceBase.NumberOfFurnace);
+                furnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == furnaceBase.FurnaceId);
+                Console.WriteLine($"Получена печь {furnace?.NumberOfFurnace}");
             }
             catch (Exception ex)
             {

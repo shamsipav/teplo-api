@@ -31,6 +31,10 @@ namespace TeploAPI.Data
         {
             // Фикс ошибки сохранения DateTime в PostgreSQL
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            
+            // Rider EF commands:
+            // 1. dotnet ef add-migration [name]
+            // 2. dotnet ef database update [migration_name]
         }
     }
 }

@@ -251,6 +251,9 @@ namespace TeploAPI.Migrations
                     b.Property<double>("EstablishedLevelOfEmbankment")
                         .HasColumnType("double precision");
 
+                    b.Property<Guid>("FurnaceId")
+                        .HasColumnType("uuid");
+
                     b.Property<double>("HeatCapacityOfAgglomerate")
                         .HasColumnType("double precision");
 

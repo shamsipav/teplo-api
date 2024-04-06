@@ -148,7 +148,7 @@ namespace TeploAPI.Controllers
             existUser.LastLoginDate = DateTime.Now;
             _context.SaveChanges();
 
-            var claims = new List<Claim> { new Claim(ClaimTypes.Name, email), new Claim("uid", existUser.Id.ToString()) };
+            var claims = new List<Claim> { new Claim(ClaimTypes.Name, email), new Claim(ClaimTypes.NameIdentifier, existUser.Id.ToString()) };
 
             var timeNow = DateTime.UtcNow;
 

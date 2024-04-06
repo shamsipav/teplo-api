@@ -98,7 +98,7 @@ namespace TeploAPI.Controllers
             // Если пришла дата, которая уже была для конкретной печи - обновляем суточную информацию
             var existDaily = await _context.DailyInfo
                 .AsNoTracking()
-                .FirstOrDefaultAsync(f => f.NumberOfFurnace == dailyInfo.NumberOfFurnace && f.Day == dailyInfo.Day);
+                .FirstOrDefaultAsync(f => f.FurnaceId == dailyInfo.FurnaceId && f.Day == dailyInfo.Day);
 
             if (existDaily != null)
             {
@@ -110,6 +110,7 @@ namespace TeploAPI.Controllers
             {
                 try
                 {
+                    dailyInfo.Id = Guid.NewGuid();
                     dailyInfo.UserId = uid;
                     await _context.DailyInfo.AddAsync(dailyInfo);
                     await _context.SaveChangesAsync();

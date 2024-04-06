@@ -12,8 +12,8 @@ using TeploAPI.Data;
 namespace TeploAPI.Migrations
 {
     [DbContext(typeof(TeploDBContext))]
-    [Migration("20240323075135_init")]
-    partial class init
+    [Migration("20240406063721_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -253,6 +253,9 @@ namespace TeploAPI.Migrations
 
                     b.Property<double>("EstablishedLevelOfEmbankment")
                         .HasColumnType("double precision");
+
+                    b.Property<Guid>("FurnaceId")
+                        .HasColumnType("uuid");
 
                     b.Property<double>("HeatCapacityOfAgglomerate")
                         .HasColumnType("double precision");

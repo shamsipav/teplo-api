@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System.Security.Claims;
+using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,8 +39,6 @@ namespace TeploAPI.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
-            Guid uid = GetUserId();
-
             // Обновление существующего варианта исходных данныз
             if (save == false && !furnaceBase.Id.Equals(Guid.Empty))
             {
@@ -51,15 +50,15 @@ namespace TeploAPI.Controllers
             // Сохранение нового варианта исходных данныз
             if (save)
             {
-                if (uid.Equals(Guid.Empty))
+                if (!User.Identity.IsAuthenticated)
                     return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
-                Guid savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnaceBase, uid);
+                Guid savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnaceBase, GetUserId());
                 if (savedFurnaceId.Equals(Guid.Empty))
                     return StatusCode(500, new Response { ErrorMessage = $"Не удалось сохранить новый вариант исходных данных" });
             }
 
-            if (!uid.Equals(Guid.Empty))
+            if (User.Identity.IsAuthenticated)
                 // TODO: Реализовать более корректную связь
                 // С UI нам пришел только номер доменной печи и данные для расчета (FurnaceBaseParam furnaceBase)
                 // Необходимо к этим данным добавить характеристики доменной печи
@@ -183,7 +182,7 @@ namespace TeploAPI.Controllers
 
             try
             {
-                furnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.NumberOfFurnace == furnaceBase.NumberOfFurnace);
+                furnace = await _context.Furnaces.AsNoTracking().FirstOrDefaultAsync(f => f.Id == furnaceBase.FurnaceId);
                 Console.WriteLine($"Получена печь {furnace?.NumberOfFurnace}");
             }
             catch (Exception ex)
