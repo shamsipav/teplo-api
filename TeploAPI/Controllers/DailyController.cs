@@ -37,7 +37,9 @@ namespace TeploAPI.Controllers
             var furnaces = new List<FurnaceBaseParam>();
             try
             {
-                furnaces = await _context.FurnacesWorkParams.AsNoTracking().Where(m => m.UserId.Equals(uid)).ToListAsync();
+                // Имеем в виду, что посуточная информация и варианты исходных данных - одна сущность, отличается только наличием/отсутствием значения в Day
+                // По-умолчанию в DateTime устанавливается DateTime.MinValue
+                furnaces = await _context.FurnacesWorkParams.AsNoTracking().Where(p => p.UserId.Equals(uid) && p.Day != DateTime.MinValue).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -59,7 +61,9 @@ namespace TeploAPI.Controllers
             var dailyInfo = new FurnaceBaseParam();
             try
             {
-                dailyInfo = await _context.FurnacesWorkParams.AsNoTracking().FirstOrDefaultAsync(m => m.Id.Equals(Guid.Parse(id)));
+                // Имеем в виду, что посуточная информация и варианты исходных данных - одна сущность, отличается только наличием/отсутствием значения в Day
+                // По-умолчанию в DateTime устанавливается DateTime.MinValue
+                dailyInfo = await _context.FurnacesWorkParams.AsNoTracking().FirstOrDefaultAsync(p => p.Id.Equals(Guid.Parse(id)) && p.Day != DateTime.MinValue);
             }
             catch (Exception ex)
             {

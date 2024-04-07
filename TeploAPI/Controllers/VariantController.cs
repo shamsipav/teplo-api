@@ -34,7 +34,9 @@ namespace TeploAPI.Controllers
             var variants = new List<FurnaceBaseParam>();
             try
             {
-                variants = await _context.FurnacesWorkParams.AsNoTracking().Where(f => f.UserId.Equals(uid)).ToListAsync();
+                // Имеем в виду, что посуточная информация и варианты исходных данных - одна сущность, отличается только наличием/отсутствием значения в Day
+                // По-умолчанию в DateTime устанавливается DateTime.MinValue
+                variants = await _context.FurnacesWorkParams.AsNoTracking().Where(v => v.UserId.Equals(uid) && v.Day == DateTime.MinValue).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -83,7 +85,9 @@ namespace TeploAPI.Controllers
 
                 try
                 {
-                    variant = await _context.FurnacesWorkParams.FirstOrDefaultAsync(d => d.Id.Equals(Guid.Parse(variantId)));
+                    // Имеем в виду, что посуточная информация и варианты исходных данных - одна сущность, отличается только наличием/отсутствием значения в Day
+                    // По-умолчанию в DateTime устанавливается DateTime.MinValue
+                    variant = await _context.FurnacesWorkParams.FirstOrDefaultAsync(v => v.Id.Equals(Guid.Parse(variantId)) && v.Day == DateTime.MinValue);
                 }
                 catch (Exception ex)
                 {
