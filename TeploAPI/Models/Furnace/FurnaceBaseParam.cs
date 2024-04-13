@@ -188,7 +188,7 @@ namespace TeploAPI.Models.Furnace
         /// <summary>
         /// Дата сохранения варианта исходных данных в БД
         /// </summary>
-        public DateTime? SaveDate { get; set; }
+        public DateTime SaveDate { get; set; }
 
 
         // ПОЛУЧЕНИЕ ИСХОДНЫХ ЗНАЧЕНИЙ

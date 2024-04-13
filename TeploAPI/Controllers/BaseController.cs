@@ -39,16 +39,18 @@ namespace TeploAPI.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
-            // Обновление существующего варианта исходных данныз
-            if (save == false && !furnaceBase.Id.Equals(Guid.Empty))
+            // Обновление существующего варианта исходных данных
+            // Кейс отрабатывает при услови, когда передается вариант исходных данных, уже сохраненный до этого в БД,
+            // Но с флагом save == true
+            if (save && furnaceBase.SaveDate != DateTime.MinValue && furnaceBase.Day == DateTime.MinValue)
             {
                 Guid updatedFurnaceId = await _furnaceService.UpdateFurnaceAsync(furnaceBase);
                 if (updatedFurnaceId.Equals(Guid.Empty))
                     return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить сохраненный вариант исходных данных с идентификатором id = '{furnaceBase.Id}'" });
             }
 
-            // Сохранение нового варианта исходных данныз
-            if (save)
+            // Сохранение нового варианта исходных данных
+            if (save && furnaceBase.SaveDate == DateTime.MinValue && furnaceBase.Day == DateTime.MinValue)
             {
                 if (!User.Identity.IsAuthenticated)
                     return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
@@ -60,7 +62,7 @@ namespace TeploAPI.Controllers
 
             if (User.Identity.IsAuthenticated)
                 // TODO: Реализовать более корректную связь
-                // С UI нам пришел только номер доменной печи и данные для расчета (FurnaceBaseParam furnaceBase)
+                // С UI нам пришел только идентификатор доменной печи и данные для расчета (FurnaceBaseParam furnaceBase)
                 // Необходимо к этим данным добавить характеристики доменной печи
                 await UpdateInputDataByFurnace(furnaceBase);
 

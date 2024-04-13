@@ -43,7 +43,7 @@ namespace TeploAPI.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error($"HTTP GET api/furnace GetAsync: Ошибка получения данных: {ex}");
+                Log.Error($"HTTP GET api/daily GetAsync: Ошибка получения данных: {ex}");
                 return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить данные справочника посуточной информации доменных печей" });
             }
 
@@ -67,13 +67,13 @@ namespace TeploAPI.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error($"HTTP GET api/furnace GetByIdAsync: Ошибка получения данных печи с идентификатором id = '{id}: {ex}");
-                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить данные о печи с идентификатором id = '{id}'" });
+                Log.Error($"HTTP GET api/daily GetByIdAsync: Ошибка получения посуточной информации с идентификатором id = '{id}: {ex}");
+                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить посуточную информацию с идентификатором id = '{id}'" });
             }
 
             if (dailyInfo == null)
             {
-                return NotFound(new Response { ErrorMessage = $"Не удалось найти данные о печи с идентификатором id = '{id}'" });
+                return NotFound(new Response { ErrorMessage = $"Не удалось найти посуточную информацию с идентификатором id = '{id}'" });
             }
 
             return Ok(new Response { IsSuccess = true, Result = dailyInfo });
@@ -102,13 +102,14 @@ namespace TeploAPI.Controllers
             // Если пришла дата, которая уже была для конкретной печи - обновляем суточную информацию
             var existDaily = await _context.FurnacesWorkParams
                 .AsNoTracking()
-                .FirstOrDefaultAsync(f => f.FurnaceId == dailyInfo.FurnaceId && f.Day == dailyInfo.Day);
+                .FirstOrDefaultAsync(f => f.FurnaceId.Equals(dailyInfo.FurnaceId) && f.Day == dailyInfo.Day);
 
             if (existDaily != null)
             {
-                // var updatedDailyInfoId = await _furnaceService.UpdateFurnaceAsync(existDaily, true);
-                // if (updatedDailyInfoId == 0)
-                //     return StatusCode(500, new Response { ErrorMessage = "Не удалось обновить информацию о работе ДП за текущие сутки" });
+                dailyInfo.Id = existDaily.Id;
+                Guid updatedDailyInfoId = await _furnaceService.UpdateFurnaceAsync(dailyInfo);
+                if (updatedDailyInfoId.Equals(Guid.Empty))
+                    return StatusCode(500, new Response { ErrorMessage = "Не удалось обновить информацию о работе ДП за текущие сутки" });
             }
             else
             {
@@ -121,12 +122,56 @@ namespace TeploAPI.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"HTTP POST api/furnace CreateAsync: Ошибка добавления печи: {ex}");
-                    return StatusCode(500, new Response { ErrorMessage = "Не удалось добавить печь в справочник" });
+                    Log.Error($"HTTP POST api/daily CreateAsync: Ошибка добавления посуточной информации: {ex}");
+                    return StatusCode(500, new Response { ErrorMessage = "Не удалось добавить посуточную информацию в справочник" });
                 }
             }
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = "Суточная информация успешно обновлена", Result = dailyInfo });
+        }
+        
+        /// <summary>
+        /// Удаление посуточной информации из справочника
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(string? id)
+        {
+            if (id != null)
+            {
+                var dailyParams = new FurnaceBaseParam();
+
+                try
+                {
+                    dailyParams = await _context.FurnacesWorkParams.FirstOrDefaultAsync(d => d.Id.Equals(Guid.Parse(id)) && d.Day != DateTime.MinValue);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"HTTP DELETE api/daily DeleteAsync: Ошибка получения посуточной информации для удаления: {ex}");
+                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить посуточную информацию для удаления: {ex}" });
+                }
+
+                if (dailyParams != null)
+                {
+                    try
+                    {
+                        _context.FurnacesWorkParams.Remove(dailyParams);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"HTTP DELETE api/daily DeleteAsync: Ошибка удаления посуточной информации: {ex}");
+                        return StatusCode(500, new Response { ErrorMessage = $"Не удалось удалить посуточную информацию с идентификатором id = '{id}'" });
+                    }
+
+                    return Ok(new Response { IsSuccess = true, SuccessMessage = $"Посуточная информация за {dailyParams.Day.ToString("dd.MM.yyyy")} успешно удалена", Result = dailyParams });
+                }
+
+                return NotFound(new Response { ErrorMessage = $"Не удалось найти найти посуточную информацию с идентификатором id = '{id}'" });
+            }
+
+            return NotFound(new Response { ErrorMessage = $"Не удалось найти посуточную информацию с идентификатором id = '{id}'" });
         }
     }
 }

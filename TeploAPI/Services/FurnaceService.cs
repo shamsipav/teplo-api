@@ -19,17 +19,14 @@ namespace TeploAPI.Services
         /// </summary>
         /// <param name="furnace"></param>
         /// <returns></returns>
-        public async Task<Guid> UpdateFurnaceAsync(FurnaceBaseParam furnace, bool isDaily = false)
+        public async Task<Guid> UpdateFurnaceAsync(FurnaceBaseParam furnace)
         {
             if (furnace != null)
             {
                 var existFurnace = new FurnaceBaseParam();
                 try
                 {
-                    if (isDaily)
-                        existFurnace = await _context.FurnacesWorkParams.FirstOrDefaultAsync(f => f.Id == furnace.Id);
-                    else
-                        existFurnace = await _context.FurnacesWorkParams.FirstOrDefaultAsync(f => f.Id == furnace.Id);
+                    existFurnace = await _context.FurnacesWorkParams.FirstOrDefaultAsync(f => f.Id == furnace.Id);
 
                     if (existFurnace != null)
                     {
@@ -81,6 +78,7 @@ namespace TeploAPI.Services
                         existFurnace.HeatOfBurningOfNaturalGasOnFarms = furnace.HeatOfBurningOfNaturalGasOnFarms;
                         existFurnace.HeatOfIncompleteBurningCarbonOfCoke = furnace.HeatOfIncompleteBurningCarbonOfCoke;
                         existFurnace.TemperatureOfCokeThatCameToTuyeres = furnace.TemperatureOfCokeThatCameToTuyeres;
+                        existFurnace.Day = furnace.Day;
                         existFurnace.SaveDate = DateTime.Now;
 
                         await _context.SaveChangesAsync();
