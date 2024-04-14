@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TeploAPI.Data;
@@ -11,9 +12,11 @@ using TeploAPI.Data;
 namespace TeploAPI.Migrations
 {
     [DbContext(typeof(TeploDBContext))]
-    partial class TeploDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240414060102_materials-in-params-class")]
+    partial class materialsinparamsclass
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -493,10 +496,13 @@ namespace TeploAPI.Migrations
                     b.Property<double>("Consumption")
                         .HasColumnType("double precision");
 
-                    b.Property<Guid>("FurnaceBaseParamId")
+                    b.Property<Guid?>("FurnaceBaseParamId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("MaterialId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("WorkParamsId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -510,9 +516,7 @@ namespace TeploAPI.Migrations
                 {
                     b.HasOne("TeploAPI.Models.Furnace.FurnaceBaseParam", null)
                         .WithMany("MaterialsWorkParamsList")
-                        .HasForeignKey("FurnaceBaseParamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FurnaceBaseParamId");
                 });
 
             modelBuilder.Entity("TeploAPI.Models.Furnace.FurnaceBaseParam", b =>

@@ -189,7 +189,11 @@ namespace TeploAPI.Models.Furnace
         /// Дата сохранения варианта исходных данных в БД
         /// </summary>
         public DateTime SaveDate { get; set; }
-
+        
+        /// <summary>
+        /// Список выбранных шихтовых материалов
+        /// </summary>
+        public List<MaterialsWorkParams> MaterialsWorkParamsList { get; set; }
 
         // ПОЛУЧЕНИЕ ИСХОДНЫХ ЗНАЧЕНИЙ
         public static FurnaceBaseParam GetDefaultData()

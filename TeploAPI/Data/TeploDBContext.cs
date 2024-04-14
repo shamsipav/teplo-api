@@ -21,6 +21,11 @@ namespace TeploAPI.Data
         /// Справочных шихтовых материалов
         /// </summary>
         public DbSet<Material> Materials { get; set; }
+        /// <summary>
+        /// Связь выбранных шихтовых материалов
+        /// и вариантов исходных данных / посуточной информации
+        /// </summary>
+        public DbSet<MaterialsWorkParams> MaterialsWorkParams { get; set; }
         public DbSet<CokeCunsumptionReference> CokeCunsumptionReferences { get; set; }
         public DbSet<FurnaceCapacityReference> FurnanceCapacityReferences { get; set; }
 
@@ -30,7 +35,7 @@ namespace TeploAPI.Data
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             
             // Rider EF commands:
-            // 1. dotnet ef add-migration [name]
+            // 1. dotnet ef migrations add [name]
             // 2. dotnet ef database update [migration_name]
         }
     }

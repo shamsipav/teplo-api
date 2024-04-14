@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TeploAPI.Data;
@@ -11,9 +12,11 @@ using TeploAPI.Data;
 namespace TeploAPI.Migrations
 {
     [DbContext(typeof(TeploDBContext))]
-    partial class TeploDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240414055516_materials-params")]
+    partial class materialsparams
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -493,31 +496,15 @@ namespace TeploAPI.Migrations
                     b.Property<double>("Consumption")
                         .HasColumnType("double precision");
 
-                    b.Property<Guid>("FurnaceBaseParamId")
+                    b.Property<Guid>("MaterialId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("MaterialId")
+                    b.Property<Guid>("WorkParamsId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FurnaceBaseParamId");
-
                     b.ToTable("MaterialsWorkParams");
-                });
-
-            modelBuilder.Entity("TeploAPI.Models.MaterialsWorkParams", b =>
-                {
-                    b.HasOne("TeploAPI.Models.Furnace.FurnaceBaseParam", null)
-                        .WithMany("MaterialsWorkParamsList")
-                        .HasForeignKey("FurnaceBaseParamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("TeploAPI.Models.Furnace.FurnaceBaseParam", b =>
-                {
-                    b.Navigation("MaterialsWorkParamsList");
                 });
 #pragma warning restore 612, 618
         }

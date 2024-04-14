@@ -26,7 +26,9 @@ namespace TeploAPI.Services
                 var existFurnace = new FurnaceBaseParam();
                 try
                 {
-                    existFurnace = await _context.FurnacesWorkParams.FirstOrDefaultAsync(f => f.Id == furnace.Id);
+                    existFurnace = await _context.FurnacesWorkParams
+                                                 .Include(d => d.MaterialsWorkParamsList)
+                                                 .FirstOrDefaultAsync(f => f.Id == furnace.Id);
 
                     if (existFurnace != null)
                     {
@@ -80,6 +82,9 @@ namespace TeploAPI.Services
                         existFurnace.TemperatureOfCokeThatCameToTuyeres = furnace.TemperatureOfCokeThatCameToTuyeres;
                         existFurnace.Day = furnace.Day;
                         existFurnace.SaveDate = DateTime.Now;
+
+                        existFurnace.MaterialsWorkParamsList.Clear();
+                        existFurnace.MaterialsWorkParamsList = furnace.MaterialsWorkParamsList;
 
                         await _context.SaveChangesAsync();
 
