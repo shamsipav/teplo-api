@@ -97,13 +97,13 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> ComparisonAsync(string basePeriodId, string comparativePeriodId)
         {
             if (string.IsNullOrEmpty(basePeriodId))
-                return BadRequest(new Response { ErrorMessage = "Необходимо указать вариант исходных данных для базового периода" });
+                return BadRequest(new Response { ErrorMessage = "Необходимо указать вариант исходных данных / посуточную информацию для базового периода" });
 
             if (string.IsNullOrEmpty(comparativePeriodId))
-                return BadRequest(new Response { ErrorMessage = "Необходимо указать вариант исходных данных для сравнительного периода" });
+                return BadRequest(new Response { ErrorMessage = "Необходимо указать вариант исходных данных / посуточную информацию для сравнительного периода" });
 
             if (basePeriodId == comparativePeriodId)
-                return BadRequest(new Response { ErrorMessage = "Необходимо указать разные варианты исходных данных" });
+                return BadRequest(new Response { ErrorMessage = "Необходимо указать разные варианты данных или посуточной информации" });
 
             CalculateService calculate = new CalculateService();
 
