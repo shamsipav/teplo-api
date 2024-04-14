@@ -27,19 +27,22 @@ namespace TeploAPI.Controllers
         }
 
         /// <summary>
-        /// Получение данных по всем печам за всё время
+        /// Получение данных посуточной информации за всё время
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
             Guid uid = GetUserId();
 
-            var furnaces = new List<FurnaceBaseParam>();
+            var dailyInfo = new List<FurnaceBaseParam>();
             try
             {
                 // Имеем в виду, что посуточная информация и варианты исходных данных - одна сущность, отличается только наличием/отсутствием значения в Day
                 // По-умолчанию в DateTime устанавливается DateTime.MinValue
-                furnaces = await _context.FurnacesWorkParams.AsNoTracking().Where(p => p.UserId.Equals(uid) && p.Day != DateTime.MinValue).ToListAsync();
+                dailyInfo = await _context.FurnacesWorkParams
+                                         .Include(d => d.MaterialsWorkParamsList)
+                                         .AsNoTracking()
+                                         .Where(p => p.UserId.Equals(uid) && p.Day != DateTime.MinValue).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -47,7 +50,7 @@ namespace TeploAPI.Controllers
                 return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить данные справочника посуточной информации доменных печей" });
             }
 
-            return Ok(new Response { IsSuccess = true, Result = furnaces });
+            return Ok(new Response { IsSuccess = true, Result = dailyInfo });
         }
         
         /// <summary>
@@ -63,7 +66,10 @@ namespace TeploAPI.Controllers
             {
                 // Имеем в виду, что посуточная информация и варианты исходных данных - одна сущность, отличается только наличием/отсутствием значения в Day
                 // По-умолчанию в DateTime устанавливается DateTime.MinValue
-                dailyInfo = await _context.FurnacesWorkParams.AsNoTracking().FirstOrDefaultAsync(p => p.Id.Equals(Guid.Parse(id)) && p.Day != DateTime.MinValue);
+                dailyInfo = await _context.FurnacesWorkParams
+                                          .Include(d => d.MaterialsWorkParamsList)
+                                          .AsNoTracking()
+                                          .FirstOrDefaultAsync(p => p.Id.Equals(Guid.Parse(id)) && p.Day != DateTime.MinValue);
             }
             catch (Exception ex)
             {
