@@ -1,7 +1,7 @@
 ﻿using System;
 using TeploAPI.Models;
 
-namespace SweetAPI.Models
+namespace TeploAPI.Models
 {
     /// <summary>
     /// Пользователь

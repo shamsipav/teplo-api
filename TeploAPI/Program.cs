@@ -4,12 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using SweetAPI.Models;
-using SweetAPI.Models.Validators;
-using System;
 using TeploAPI.Data;
+using TeploAPI.Data.Interfaces;
 using TeploAPI.Interfaces;
-using TeploAPI.Middlewares;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
 using TeploAPI.Models.Validators;
@@ -84,8 +81,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 builder.Services.AddScoped<IFurnaceService, FurnaceService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReferenceCoefficientsService, ReferenceService>();
+
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
 builder.Services.AddScoped<IValidator<FurnaceBaseParam>, FurnaceValidator>();
 builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();

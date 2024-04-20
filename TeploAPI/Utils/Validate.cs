@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using TeploAPI.Utils;
 
-namespace SweetAPI.Utils
+namespace TeploAPI.Utils
 {
     public static class Validate
     {
