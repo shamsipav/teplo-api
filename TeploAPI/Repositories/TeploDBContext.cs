@@ -3,7 +3,7 @@ using SweetAPI.Models;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
 
-namespace TeploAPI.Data
+namespace TeploAPI.Repositories
 {
     public class TeploDBContext : DbContext
     {

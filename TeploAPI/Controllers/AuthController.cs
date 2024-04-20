@@ -13,9 +13,9 @@ namespace TeploAPI.Controllers
     /// Авторизация и аутентификация пользователя
     /// </summary>
     [ApiController]
-    [CustomExceptionFilter]
     [Route("api/[controller]")]
-    public class AuthController : TeploController
+    [CustomExceptionFilter]
+    public class AuthController : ControllerBase
     {
         private IValidator<User> _validator;
         private readonly IUserService _userService;
@@ -36,7 +36,7 @@ namespace TeploAPI.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Errors[0].ErrorMessage);
             
-            return await _userService.Register(user);
+            return await _userService.RegisterAsync(user);
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace TeploAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Post(Login login)
         {
-            return await _userService.Authenticate(login);
+            return await _userService.AuthenticateAsync(login);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace TeploAPI.Controllers
         [HttpGet("user")]
         public async Task<IActionResult> Get()
         {
-            return await _userService.GetInformation();
+            return await _userService.GetInformationAsync();
         }
     }
 }

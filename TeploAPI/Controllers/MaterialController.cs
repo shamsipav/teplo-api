@@ -4,16 +4,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System.Security.Claims;
-using TeploAPI.Data;
+using TeploAPI.Filters;
 using TeploAPI.Models;
+using TeploAPI.Repositories;
+using TeploAPI.Utils;
 
 namespace TeploAPI.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class MaterialController : TeploController
+    [CustomExceptionFilter]
+    public class MaterialController : ControllerBase
     {
         private IValidator<Material> _validator;
         private TeploDBContext _context;
@@ -30,7 +32,7 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            Guid uid = GetUserId();
+            Guid uid = User.GetUserId();
             if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
@@ -56,7 +58,7 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(Material material)
         {
-            Guid uid = GetUserId();
+            Guid uid = User.GetUserId();
             if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 

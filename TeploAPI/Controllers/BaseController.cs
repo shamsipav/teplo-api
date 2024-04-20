@@ -1,31 +1,34 @@
-﻿using System.Security.Claims;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using TeploAPI.Data;
+using TeploAPI.Filters;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
+using TeploAPI.Repositories;
 using TeploAPI.Services;
+using TeploAPI.Utils;
 using TeploAPI.ViewModels;
 
 namespace TeploAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class BaseController : TeploController
+    [CustomExceptionFilter]
+    public class BaseController : ControllerBase
     {
         private IFurnaceService _furnaceService;
+        private IFurnaceWorkParamsService _furnaceWorkParamsService;
         private IValidator<FurnaceBaseParam> _validator;
         private TeploDBContext _context;
-        public BaseController(TeploDBContext context, IValidator<FurnaceBaseParam> validator, IFurnaceService furnaceService)
+        public BaseController(TeploDBContext context, IValidator<FurnaceBaseParam> validator, IFurnaceService furnaceService, IFurnaceWorkParamsService furnaceWorkParamsService)
         {
             _context = context;
             _validator = validator;
-            _furnaceService = furnaceService;
+            _furnaceWorkParamsService = furnaceWorkParamsService;
         }
 
         /// <summary>
@@ -44,20 +47,14 @@ namespace TeploAPI.Controllers
             // Но с флагом save == true
             if (save && furnaceBase.SaveDate != DateTime.MinValue && furnaceBase.Day == DateTime.MinValue)
             {
-                Guid updatedFurnaceId = await _furnaceService.UpdateFurnaceAsync(furnaceBase);
-                if (updatedFurnaceId.Equals(Guid.Empty))
-                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить сохраненный вариант исходных данных с идентификатором id = '{furnaceBase.Id}'" });
+                furnaceBase = await _furnaceWorkParamsService.UpdateAsync(furnaceBase);
             }
 
             // Сохранение нового варианта исходных данных
             if (save && furnaceBase.SaveDate == DateTime.MinValue && furnaceBase.Day == DateTime.MinValue)
             {
-                if (!User.Identity.IsAuthenticated)
-                    return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
-
-                Guid savedFurnaceId = await _furnaceService.SaveFurnaceAsync(furnaceBase, GetUserId());
-                if (savedFurnaceId.Equals(Guid.Empty))
-                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось сохранить новый вариант исходных данных" });
+                // TODO: Не факт, что будет работать
+                furnaceBase = await _furnaceWorkParamsService.CreateOrUpdateAsync(furnaceBase, User.GetUserId());
             }
 
             if (User.Identity.IsAuthenticated)

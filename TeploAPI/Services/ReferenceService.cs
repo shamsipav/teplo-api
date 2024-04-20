@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Serilog;
-using TeploAPI.Data;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
-using TeploAPI.Models.Furnace;
+using TeploAPI.Repositories;
 
 namespace TeploAPI.Services
 {

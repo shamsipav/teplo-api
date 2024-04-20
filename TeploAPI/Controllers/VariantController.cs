@@ -1,17 +1,19 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using TeploAPI.Data;
+using TeploAPI.Filters;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
+using TeploAPI.Repositories;
+using TeploAPI.Utils;
 
 namespace TeploAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class VariantController : TeploController
+    [CustomExceptionFilter]
+    public class VariantController : ControllerBase
     {
         private TeploDBContext _context;
         public VariantController(TeploDBContext context)
@@ -27,7 +29,7 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            Guid uid = GetUserId();
+            Guid uid = User.GetUserId();
             if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 

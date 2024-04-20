@@ -6,9 +6,9 @@ namespace TeploAPI.Interfaces;
 
 public interface IUserService
 {
-    public Task<ObjectResult> Register(User user);
+    Task<ObjectResult> RegisterAsync(User user);
     
-    public Task<ObjectResult> Authenticate(Login login);
+    Task<ObjectResult> AuthenticateAsync(Login login);
     
-    public Task<ObjectResult> GetInformation();
+    Task<ObjectResult> GetInformationAsync();
 }

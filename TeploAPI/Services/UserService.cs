@@ -3,10 +3,10 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SweetAPI.Models;
-using TeploAPI.Data.Interfaces;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
+using TeploAPI.Repositories.Interfaces;
 using TeploAPI.Utils;
 
 namespace TeploAPI.Services;
@@ -22,7 +22,7 @@ public class UserService : IUserService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<ObjectResult> Register(User user)
+    public async Task<ObjectResult> RegisterAsync(User user)
     {
         User existUser = await _userRepository.GetSingleAsync(user.Email);
 
@@ -74,7 +74,7 @@ public class UserService : IUserService
             { IsSuccess = true, SuccessMessage = "Пользователь успешно зарегистрирован" });
     }
 
-    public async Task<ObjectResult> Authenticate(Login login)
+    public async Task<ObjectResult> AuthenticateAsync(Login login)
     {
         var email = login.Email;
         var password = login.Password;
@@ -117,7 +117,7 @@ public class UserService : IUserService
             { IsSuccess = true, SuccessMessage = "Вход в аккаунт выполнен", Result = encodedJwt });
     }
 
-    public async Task<ObjectResult> GetInformation()
+    public async Task<ObjectResult> GetInformationAsync()
     {
         IHeaderDictionary headers = _httpContextAccessor.HttpContext.Request.Headers;
 

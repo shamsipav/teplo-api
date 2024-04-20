@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using TeploAPI.Data;
-using TeploAPI.Data.Interfaces;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
 using TeploAPI.Models.Validators;
+using TeploAPI.Repositories;
+using TeploAPI.Repositories.Interfaces;
 using TeploAPI.Services;
 using TeploAPI.Utils;
 
@@ -79,14 +79,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
         };
     });
+
 builder.Services.AddAuthorization();
 
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+// Репозитории
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IFurnaceWorkParamsRepository, FurnaceWorkParamsRepository>();
+builder.Services.AddScoped<IFurnaceRepository, FurnaceRepository>();
+
+// Сервисы
 builder.Services.AddScoped<IFurnaceService, FurnaceService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReferenceCoefficientsService, ReferenceService>();
 
+// Валидаторы
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
 builder.Services.AddScoped<IValidator<FurnaceBaseParam>, FurnaceValidator>();
 builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();
@@ -106,8 +114,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-//app.UseMiddleware<RequestResponseMiddleware>();
 
 app.UseHttpsRedirection();
 

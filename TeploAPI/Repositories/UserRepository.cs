@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TeploAPI.Data.Interfaces;
 using TeploAPI.Models;
+using TeploAPI.Repositories.Interfaces;
 
-namespace TeploAPI.Data;
+namespace TeploAPI.Repositories;
 
 public class UserRepository : IUserRepository
 {

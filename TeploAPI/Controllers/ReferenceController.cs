@@ -1,17 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
-using TeploAPI.Data;
+using TeploAPI.Filters;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
+using TeploAPI.Repositories;
 
 namespace TeploAPI.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ReferenceController : TeploController
+    [CustomExceptionFilter]
+    public class ReferenceController : ControllerBase
     {
         private IReferenceCoefficientsService _referenceService;
         private TeploDBContext _context;
@@ -39,6 +40,11 @@ namespace TeploAPI.Controllers
                 return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить коэффициенты для справочника" });
 
             return Ok(new Response { IsSuccess = true, Result = reference });
+        }
+
+        private Guid GetUserId()
+        {
+            throw new NotImplementedException();
         }
 
         // TODO: Проверить, действительно ли нужно использовать ReferenceDTO,

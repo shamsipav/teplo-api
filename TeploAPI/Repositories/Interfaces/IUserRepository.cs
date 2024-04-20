@@ -1,18 +1,18 @@
 ﻿using TeploAPI.Models;
 
-namespace TeploAPI.Data.Interfaces;
+namespace TeploAPI.Repositories.Interfaces;
 
 public interface IUserRepository
 {
-    public Task<User> GetSingleAsync(Guid id);
+    Task<User> GetSingleAsync(Guid id);
 
-    public Task<User> GetSingleAsync(string email);
+    Task<User> GetSingleAsync(string email);
 
-    public Task<User> AddAsync(User user);
+    Task<User> AddAsync(User user);
 
-    public User Update(User user);
+    User Update(User user);
 
-    public Task Delete(Guid id);
+    Task Delete(Guid id);
 
-    public Task<bool> SaveChangesAsync();
+    Task<bool> SaveChangesAsync();
 }

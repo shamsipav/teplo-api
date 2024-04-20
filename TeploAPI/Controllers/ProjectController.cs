@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using TeploAPI.Data;
+using TeploAPI.Filters;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
+using TeploAPI.Repositories;
 using TeploAPI.Services;
+using TeploAPI.Utils;
 using TeploAPI.ViewModels;
 
 namespace TeploAPI.Controllers
@@ -14,7 +16,8 @@ namespace TeploAPI.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class ProjectController : TeploController
+    [CustomExceptionFilter]
+    public class ProjectController : ControllerBase
     {
         private IReferenceCoefficientsService _referenceService;
         private TeploDBContext _context;
@@ -30,7 +33,7 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync(FurnaceProjectParam projectPeriodFurnaceData, Guid inputDataId)
         {
-            Guid uid = GetUserId();
+            Guid uid = User.GetUserId();
             if (uid.Equals(Guid.Empty))
                 return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
