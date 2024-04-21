@@ -1,6 +1,4 @@
-﻿using FluentValidation;
-using FluentValidation.Results;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TeploAPI.Dtos;
 using TeploAPI.Filters;
@@ -17,12 +15,10 @@ namespace TeploAPI.Controllers
     [CustomExceptionFilter]
     public class AuthController : ControllerBase
     {
-        private readonly IValidator<User> _validator;
         private readonly IUserService _userService;
-        public AuthController( IUserService userService, IValidator<User> validator)
+        public AuthController(IUserService userService)
         {
             _userService = userService;
-            _validator = validator;
         }
 
         /// <summary>
@@ -31,11 +27,6 @@ namespace TeploAPI.Controllers
         [HttpPost("signup")]
         public async Task<IActionResult> PostAsync(User user)
         {
-            ValidationResult validationResult = await _validator.ValidateAsync(user);
-
-            if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors[0].ErrorMessage);
-            
             await _userService.RegisterAsync(user);
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = "Пользователь успешно зарегистрирован" });

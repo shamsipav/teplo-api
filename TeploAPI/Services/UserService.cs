@@ -1,5 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.IdentityModel.Tokens;
 using TeploAPI.Dtos;
 using TeploAPI.Exceptions;
@@ -15,15 +17,22 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IValidator<User> _validator;
 
-    public UserService(IUserRepository userRepository, IHttpContextAccessor httpContextAccessor)
+    public UserService(IUserRepository userRepository, IHttpContextAccessor httpContextAccessor, IValidator<User> validator)
     {
         _userRepository = userRepository;
         _httpContextAccessor = httpContextAccessor;
+        _validator = validator;
     }
 
     public async Task<User> RegisterAsync(User user)
     {
+        ValidationResult validationResult = await _validator.ValidateAsync(user);
+
+        if (!validationResult.IsValid)
+            throw new BadRequestException(validationResult.Errors[0].ErrorMessage);
+        
         User existUser = await _userRepository.GetSingleAsync(user.Email);
 
         if (existUser != null)

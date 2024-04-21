@@ -1,4 +1,6 @@
-﻿using Serilog;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Serilog;
 using TeploAPI.Exceptions;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
@@ -12,17 +14,24 @@ public class BasePeriodService : IBasePeriodService
     private readonly IFurnaceWorkParamsService _furnaceWorkParamsService;
     private readonly ICalculateService _calculateService;
     private readonly IFurnaceService _furnaceService;
+    private IValidator<FurnaceBaseParam> _validator;
 
     public BasePeriodService(IFurnaceWorkParamsService furnaceWorkParamsService, ICalculateService calculateService,
-        IFurnaceService furnaceService)
+        IFurnaceService furnaceService, IValidator<FurnaceBaseParam> validator)
     {
         _furnaceWorkParamsService = furnaceWorkParamsService;
         _calculateService = calculateService;
         _furnaceService = furnaceService;
+        _validator = validator;
     }
 
     public async Task<ResultViewModel> ProcessBasePeriod(FurnaceBaseParam furnaceBase, bool saveData)
     {
+        ValidationResult validationResult = await _validator.ValidateAsync(furnaceBase);
+
+        if (!validationResult.IsValid)
+            throw new BadRequestException(validationResult.Errors[0].ErrorMessage);
+        
         // Обновление существующего варианта исходных данных
         // Кейс отрабатывает при услови, когда передается вариант исходных данных, уже сохраненный до этого в БД,
         // Но с флагом save == true
@@ -48,6 +57,9 @@ public class BasePeriodService : IBasePeriodService
 
     public async Task<UnionResultViewModel> ProcessComparativePeriod(Guid basePeriodId, Guid comparativePeriodId)
     {
+        if (basePeriodId == comparativePeriodId)
+            throw new BadRequestException("Необходимо указать разные варианты данных или посуточной информации");
+        
         // Получение наборов исходных данных для двух периодов.
         FurnaceBaseParam basePeriodFurnace = await _furnaceWorkParamsService.GetSingleAsync(basePeriodId);
         FurnaceBaseParam comparativePeriodFurnance = await _furnaceWorkParamsService.GetSingleAsync(comparativePeriodId);
