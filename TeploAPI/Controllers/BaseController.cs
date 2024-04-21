@@ -2,14 +2,10 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
 using TeploAPI.Filters;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
-using TeploAPI.Repositories;
-using TeploAPI.Services;
 using TeploAPI.ViewModels;
 
 namespace TeploAPI.Controllers
