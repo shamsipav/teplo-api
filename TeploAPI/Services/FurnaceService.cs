@@ -1,27 +1,33 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using TeploAPI.Interfaces;
 using TeploAPI.Models.Furnace;
 using TeploAPI.Repositories.Interfaces;
+using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Services
 {
     public class FurnaceService : IFurnaceService
     {
-        private IFurnaceRepository _furnaceRepository;
-
-        public FurnaceService(IFurnaceRepository furnaceRepository)
+        private readonly IFurnaceRepository _furnaceRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public FurnaceService(IFurnaceRepository furnaceRepository, IHttpContextAccessor httpContextAccessor)
         {
             _furnaceRepository = furnaceRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
+        
+        private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
 
-        public async Task<List<Furnace>> GetAll(Guid userId)
+        public async Task<List<Furnace>> GetAll()
         {
+            Guid userId = _user.GetUserId();
             return await _furnaceRepository.GetAll(userId).ToListAsync();
         }
 
-        public async Task<Furnace> CreateAsync(Furnace furnace, Guid userId)
+        public async Task<Furnace> CreateFurnaceAsync(Furnace furnace)
         {
-            furnace.UserId = userId;
+            furnace.UserId = _user.GetUserId();
 
             await _furnaceRepository.AddAsync(furnace);
             await _furnaceRepository.SaveChangesAsync();
@@ -29,7 +35,7 @@ namespace TeploAPI.Services
             return furnace;
         }
 
-        public async Task<Furnace> UpdateAsync(Furnace furnace)
+        public async Task<Furnace> UpdateFurnaceAsync(Furnace furnace)
         {
             Furnace existFurnace = await _furnaceRepository.GetSingleAsync(furnace.Id);
 
@@ -58,7 +64,7 @@ namespace TeploAPI.Services
             return furnace;
         }
 
-        public async Task<Furnace> GetSingleAsync(Guid id)
+        public async Task<Furnace> GetSingleFurnaceAsync(Guid id)
         {
             return await _furnaceRepository.GetSingleAsync(id);
         }

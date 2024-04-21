@@ -18,10 +18,6 @@ public class CustomExceptionFilterAttribute: Attribute, IExceptionFilter
         
         Log.Error($"An exception occurred in controller {controllerName}, action {actionName}, for request path {requestPath}: \n {exceptionMessage} \n {exceptionStack}");
         
-        context.Result = new ContentResult
-        {
-            Content = $"An exception occurred in controller {controllerName}, action {actionName}, for request path {requestPath}: \n {exceptionMessage} \n {exceptionStack}"
-        };
         context.ExceptionHandled = true;
 
         int statusCode = 500;

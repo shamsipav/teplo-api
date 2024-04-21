@@ -8,7 +8,7 @@ using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
 using TeploAPI.Repositories;
 using TeploAPI.Services;
-using TeploAPI.Utils;
+using TeploAPI.Utils.Extentions;
 using TeploAPI.ViewModels;
 
 namespace TeploAPI.Controllers

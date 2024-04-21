@@ -93,6 +93,8 @@ builder.Services.AddScoped<IFurnaceRepository, FurnaceRepository>();
 builder.Services.AddScoped<IFurnaceService, FurnaceService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReferenceCoefficientsService, ReferenceService>();
+builder.Services.AddScoped<IBasePeriodService, BasePeriodService>();
+builder.Services.AddScoped<ICalculateService, CalculateService>();
 
 // Валидаторы
 builder.Services.AddScoped<IValidator<User>, UserValidator>();

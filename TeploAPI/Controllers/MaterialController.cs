@@ -7,7 +7,7 @@ using Serilog;
 using TeploAPI.Filters;
 using TeploAPI.Models;
 using TeploAPI.Repositories;
-using TeploAPI.Utils;
+using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Controllers
 {

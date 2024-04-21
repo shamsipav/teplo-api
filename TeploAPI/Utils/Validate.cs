@@ -1,17 +1,12 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using TeploAPI.Utils;
 
 namespace TeploAPI.Utils
 {
     public static class Validate
     {
-        internal static string ValidateToken(string token)
+        public static string ValidateToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -31,10 +26,7 @@ namespace TeploAPI.Utils
 
                 string accountEmail = jwtToken.Claims.First(x => x.Type == ClaimTypes.Name).Value;
 
-                if (accountEmail != null)
-                    return accountEmail;
-
-                return null;
+                return accountEmail ?? null;
             }
             catch
             {

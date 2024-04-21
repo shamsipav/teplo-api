@@ -4,18 +4,31 @@ namespace TeploAPI.Interfaces
 {
     public interface IFurnaceService
     {
-        Task<List<Furnace>> GetAll(Guid userId);
+        /// <summary>
+        /// Получить данные по всем печам в справочнике (для текущего пользователя)
+        /// </summary>
+        Task<List<Furnace>> GetAll();
 
-        Task<Furnace> CreateAsync(Furnace furnace, Guid userId);
+        /// <summary>
+        /// Добавить данные печи в справочник (с привязкой к текущему пользователю)
+        /// </summary>
+        Task<Furnace> CreateFurnaceAsync(Furnace furnace);
 
-        Task<Furnace> UpdateAsync(Furnace furnace);
+        /// <summary>
+        /// Обновить данные печи
+        /// </summary>
+        Task<Furnace> UpdateFurnaceAsync(Furnace furnace);
         
-        Task<Furnace> GetSingleAsync(Guid id);
-        
-        // Task<Guid> UpdateFurnaceAsync(FurnaceBaseParam furnace);
-        //
-        // Task<Guid> SaveFurnaceAsync(FurnaceBaseParam furnace, Guid userId);
+        /// <summary>
+        /// Получить данные по конкретной печи
+        /// </summary>
+        /// <param name="id">Идентификатор печи</param>
+        Task<Furnace> GetSingleFurnaceAsync(Guid id);
 
+        /// <summary>
+        /// Удалить данные из справочника печей
+        /// </summary>
+        /// <param name="id">Идентификатор печи</param>
         Task<Furnace> RemoveFurnaceAsync(Guid id);
     }
 }

@@ -5,6 +5,9 @@ namespace TeploAPI.Interfaces;
 
 public interface IUserService
 {
+    /// <summary>
+    /// Создание аккаунта
+    /// </summary>
     Task<User> RegisterAsync(User user);
     
     /// <summary>
@@ -13,5 +16,8 @@ public interface IUserService
     /// <returns>JWT-токен</returns>
     Task<string> AuthenticateAsync(Login login);
     
+    /// <summary>
+    /// Получение информации о текущем пользователе
+    /// </summary>
     Task<UserDTO> GetInformationAsync();
 }

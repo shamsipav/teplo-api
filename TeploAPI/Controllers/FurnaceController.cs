@@ -4,7 +4,7 @@ using TeploAPI.Filters;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
-using TeploAPI.Utils;
+using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Controllers
 {
@@ -28,11 +28,7 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            Guid uid = User.GetUserId();
-            if (uid.Equals(Guid.Empty))
-                return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
-
-            List<Furnace> furnaces = await _furnaceService.GetAll(uid);
+            List<Furnace> furnaces = await _furnaceService.GetAll();
                 
             return Ok(new Response { IsSuccess = true, Result = furnaces });
         }
@@ -54,7 +50,7 @@ namespace TeploAPI.Controllers
             //if (!validationResult.IsValid)
             //    return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
-            Furnace createdFurnace = await _furnaceService.CreateAsync(furnace, uid);
+            Furnace createdFurnace = await _furnaceService.CreateFurnaceAsync(furnace);
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = $"Печь №{furnace.NumberOfFurnace} успешно добавлена", Result = createdFurnace });
         }
@@ -75,7 +71,7 @@ namespace TeploAPI.Controllers
             //if (!validationResult.IsValid)
             //    return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
-            Furnace updatedFurnace = await _furnaceService.UpdateAsync(furnace);
+            Furnace updatedFurnace = await _furnaceService.UpdateFurnaceAsync(furnace);
             
             if (updatedFurnace == null)
                 return NotFound(StatusCode(500, new Response { ErrorMessage = $"Не удалось найти информацию о печи с идентификатором id = '{furnace.Id}'" }));
@@ -91,7 +87,7 @@ namespace TeploAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string? id)
         {
-            Furnace furnace = await _furnaceService.GetSingleAsync(Guid.Parse(id));
+            Furnace furnace = await _furnaceService.GetSingleFurnaceAsync(Guid.Parse(id));
 
             if (furnace == null)
                 return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о печи с идентификатором id = '{id}'" });

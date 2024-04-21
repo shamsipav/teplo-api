@@ -6,7 +6,7 @@ using TeploAPI.Filters;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
 using TeploAPI.Repositories;
-using TeploAPI.Utils;
+using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Controllers
 {

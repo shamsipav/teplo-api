@@ -1,23 +1,29 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using TeploAPI.Interfaces;
 using TeploAPI.Models.Furnace;
 using TeploAPI.Repositories.Interfaces;
+using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Services;
 
 public class FurnaceWorkParamsService : IFurnaceWorkParamsService
 {
-    private IFurnaceWorkParamsRepository _furnaceWorkParamsRepository;
+    private readonly IFurnaceWorkParamsRepository _furnaceWorkParamsRepository;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public FurnaceWorkParamsService(IFurnaceWorkParamsRepository furnaceWorkParamsRepository)
+    public FurnaceWorkParamsService(IFurnaceWorkParamsRepository furnaceWorkParamsRepository, IHttpContextAccessor httpContextAccessor)
     {
         _furnaceWorkParamsRepository = furnaceWorkParamsRepository;
+        _httpContextAccessor = httpContextAccessor;
     }
+    
+    private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
 
-    public async Task<FurnaceBaseParam> AddAsync(FurnaceBaseParam furnaceBaseParam, Guid userId)
+    public async Task<FurnaceBaseParam> AddAsync(FurnaceBaseParam furnaceBaseParam)
     {
         furnaceBaseParam.Id = Guid.NewGuid();
-        furnaceBaseParam.UserId = userId;
+        furnaceBaseParam.UserId = _user.GetUserId();
 
         await _furnaceWorkParamsRepository.AddAsync(furnaceBaseParam);
         await _furnaceWorkParamsRepository.SaveChangesAsync();
@@ -25,7 +31,7 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
         return furnaceBaseParam;
     }
 
-    public async Task<FurnaceBaseParam> CreateOrUpdateAsync(FurnaceBaseParam dailyInfo, Guid userId)
+    public async Task<FurnaceBaseParam> CreateOrUpdateAsync(FurnaceBaseParam dailyInfo)
     {
         // Если пришла дата, которая уже была для конкретной печи - обновляем суточную информацию
         FurnaceBaseParam existDaily = await GetSingleAsync(dailyInfo.FurnaceId, dailyInfo.Day);
@@ -37,14 +43,15 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
         }
         else
         {
-            await AddAsync(dailyInfo, userId);
+            await AddAsync(dailyInfo);
         }
 
         return existDaily;
     }
 
-    public async Task<List<FurnaceBaseParam>> GetAll(Guid userId, bool isDaily = false)
+    public async Task<List<FurnaceBaseParam>> GetAll(bool isDaily = false)
     {
+        Guid userId = _user.GetUserId();
         return await _furnaceWorkParamsRepository.GetAll(userId, isDaily).ToListAsync();
     }
 

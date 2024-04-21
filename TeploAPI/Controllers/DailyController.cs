@@ -6,7 +6,6 @@ using TeploAPI.Filters;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
-using TeploAPI.Utils;
 
 namespace TeploAPI.Controllers
 {
@@ -30,9 +29,7 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            Guid uid = User.GetUserId();
-
-            List<FurnaceBaseParam> dailyInfoList = await _furnaceWorkParamsService.GetAll(uid, true);
+            List<FurnaceBaseParam> dailyInfoList = await _furnaceWorkParamsService.GetAll( true);
 
             return Ok(new Response { IsSuccess = true, Result = dailyInfoList });
         }
@@ -64,14 +61,7 @@ namespace TeploAPI.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
-            Guid uid = User.GetUserId();
-            if (uid.Equals(Guid.Empty))
-                return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
-
-            if (dailyInfo == null)
-                return BadRequest(new Response { ErrorMessage = "Отсутсвуют значения для добавления печи в справочник" });
-
-            await _furnaceWorkParamsService.CreateOrUpdateAsync(dailyInfo, uid);
+            await _furnaceWorkParamsService.CreateOrUpdateAsync(dailyInfo);
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = "Суточная информация успешно обновлена", Result = dailyInfo });
         }
@@ -84,9 +74,6 @@ namespace TeploAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(string? id)
         {
-            if (id == null)
-                return NotFound(new Response { ErrorMessage = $"Не удалось найти посуточную информацию с идентификатором id = '{id}'" });
-            
             FurnaceBaseParam deletedFurnaceBaseParam = await _furnaceWorkParamsService.RemoveAsync(Guid.Parse(id));
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = $"Посуточная информация за {deletedFurnaceBaseParam.Day.ToString("dd.MM.yyyy")} успешно удалена", Result = deletedFurnaceBaseParam });

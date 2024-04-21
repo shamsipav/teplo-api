@@ -1,4 +1,5 @@
-﻿using TeploAPI.Models;
+﻿using TeploAPI.Interfaces;
+using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
 using TeploAPI.ViewModels;
 
@@ -7,7 +8,7 @@ namespace TeploAPI.Services
     /// <summary>
     /// Сервис для проведения расчетов
     /// </summary>
-    public class CalculateService
+    public class CalculateService : ICalculateService
     {
         public Result СalculateThermalRegime(FurnaceBaseParam input)
         {
