@@ -23,6 +23,7 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Services.AddEntityFrameworkNpgsql().AddDbContext<TeploDBContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("TeploAPIConnection")));
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -93,6 +94,7 @@ builder.Services.AddScoped<IFurnaceRepository, FurnaceRepository>();
 builder.Services.AddScoped<IFurnaceService, FurnaceService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReferenceCoefficientsService, ReferenceService>();
+builder.Services.AddScoped<IFurnaceWorkParamsService, FurnaceWorkParamsService>();
 builder.Services.AddScoped<IBasePeriodService, BasePeriodService>();
 builder.Services.AddScoped<ICalculateService, CalculateService>();
 
@@ -104,6 +106,7 @@ builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();
 var app = builder.Build();
 
 app.UseCors(builder => builder
+    // TODO: Плохо, что адрес UI вбит гвоздями
     .WithOrigins("http://0.0.0.0:5173")
     .AllowAnyMethod()
     .AllowAnyHeader()
