@@ -16,11 +16,9 @@ namespace TeploAPI.Controllers
     public class DailyController : ControllerBase
     {
         private readonly IFurnaceWorkParamsService _furnaceWorkParamsService;
-        private IValidator<FurnaceBaseParam> _validator;
-        public DailyController(IFurnaceWorkParamsService furnaceWorkParamsService, IValidator<FurnaceBaseParam> validator)
+        public DailyController(IFurnaceWorkParamsService furnaceWorkParamsService)
         {
             _furnaceWorkParamsService = furnaceWorkParamsService;
-            _validator = validator;
         }
 
         /// <summary>
@@ -37,8 +35,6 @@ namespace TeploAPI.Controllers
         /// <summary>
         /// Получение посуточной информации по идентификатору
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string? id)
         {
@@ -56,11 +52,6 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(FurnaceBaseParam dailyInfo)
         {
-            ValidationResult validationResult = await _validator.ValidateAsync(dailyInfo);
-            
-            if (!validationResult.IsValid)
-                return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
-
             await _furnaceWorkParamsService.CreateOrUpdateAsync(dailyInfo);
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = "Суточная информация успешно обновлена", Result = dailyInfo });
@@ -69,8 +60,6 @@ namespace TeploAPI.Controllers
         /// <summary>
         /// Удаление посуточной информации из справочника
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(string? id)
         {

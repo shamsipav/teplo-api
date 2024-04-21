@@ -1,5 +1,8 @@
 ﻿using System.Security.Claims;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
+using TeploAPI.Exceptions;
 using TeploAPI.Interfaces;
 using TeploAPI.Models.Furnace;
 using TeploAPI.Repositories.Interfaces;
@@ -11,11 +14,13 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
 {
     private readonly IFurnaceWorkParamsRepository _furnaceWorkParamsRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private IValidator<FurnaceBaseParam> _validator;
 
-    public FurnaceWorkParamsService(IFurnaceWorkParamsRepository furnaceWorkParamsRepository, IHttpContextAccessor httpContextAccessor)
+    public FurnaceWorkParamsService(IFurnaceWorkParamsRepository furnaceWorkParamsRepository, IHttpContextAccessor httpContextAccessor, IValidator<FurnaceBaseParam> validator)
     {
         _furnaceWorkParamsRepository = furnaceWorkParamsRepository;
         _httpContextAccessor = httpContextAccessor;
+        _validator = validator;
     }
     
     private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
@@ -33,6 +38,11 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
 
     public async Task<FurnaceBaseParam> CreateOrUpdateAsync(FurnaceBaseParam dailyInfo)
     {
+        ValidationResult validationResult = await _validator.ValidateAsync(dailyInfo);
+            
+        if (!validationResult.IsValid)
+            throw new BadRequestException( validationResult.Errors[0].ErrorMessage);
+        
         // Если пришла дата, которая уже была для конкретной печи - обновляем суточную информацию
         FurnaceBaseParam existDaily = await GetSingleAsync(dailyInfo.FurnaceId, dailyInfo.Day);
 

@@ -35,7 +35,6 @@ namespace TeploAPI.Controllers
         /// </summary>
         /// <param name="basePeriodId">Идентификатор базового периода</param>
         /// <param name="comparativePeriodId">Идентификатор сравнительного периода</param>
-        /// <returns></returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> ComparisonAsync(string basePeriodId, string comparativePeriodId)
