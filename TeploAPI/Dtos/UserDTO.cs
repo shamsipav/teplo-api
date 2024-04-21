@@ -1,4 +1,4 @@
-﻿namespace TeploAPI.Models
+﻿namespace TeploAPI.Dtos
 {
     public class UserDTO
     {

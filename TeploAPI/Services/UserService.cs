@@ -1,8 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using SweetAPI.Models;
+using TeploAPI.Dtos;
+using TeploAPI.Exceptions;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
@@ -22,13 +22,12 @@ public class UserService : IUserService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<ObjectResult> RegisterAsync(User user)
+    public async Task<User> RegisterAsync(User user)
     {
         User existUser = await _userRepository.GetSingleAsync(user.Email);
 
         if (existUser != null)
-            return new BadRequestObjectResult(new Response
-                { ErrorMessage = "Пользователь с таким Email уже зарегистрирован" });
+            throw new BusinessLogicException("Пользователь с таким Email уже зарегистрирован");
 
         user.Email = user.Email.ToLower();
 
@@ -37,7 +36,7 @@ public class UserService : IUserService
 
         user.LastLoginIp = _httpContextAccessor.HttpContext.Request.Host.ToString();
 
-        await _userRepository.AddAsync(user);
+        user = await _userRepository.AddAsync(user);
         await _userRepository.SaveChangesAsync();
 
         // TODO: Разнести логику ниже по разным сервисам
@@ -70,27 +69,27 @@ public class UserService : IUserService
         // await _context.Furnaces.AddAsync(defaultFurnace);
         // await _context.SaveChangesAsync();
 
-        return new OkObjectResult(new Response
-            { IsSuccess = true, SuccessMessage = "Пользователь успешно зарегистрирован" });
+        return user;
     }
 
-    public async Task<ObjectResult> AuthenticateAsync(Login login)
+    public async Task<string> AuthenticateAsync(Login login)
     {
-        var email = login.Email;
-        var password = login.Password;
+        string email = login.Email;
+        string password = login.Password;
 
         if (string.IsNullOrWhiteSpace(email))
-            return new BadRequestObjectResult(new Response { ErrorMessage = "Email яляется обязательным полем" });
+            throw new BadRequestException("Email яляется обязательным полем");
 
         if (string.IsNullOrWhiteSpace(password))
-            return new BadRequestObjectResult(new Response { ErrorMessage = "Password яляется обязательным полем" });
+            throw new BadRequestException("Password яляется обязательным полем");
 
         User existUser = await _userRepository.GetSingleAsync(email.ToLower());
         if (existUser is null)
-            return new NotFoundObjectResult(new Response { ErrorMessage = "Пользователь с таким Email не найден" });
+            throw new NotFoundException("Пользователь с таким Email не найден");
 
         bool passwordComparison = BCrypt.Net.BCrypt.Verify(password, existUser.Password);
-        if (!passwordComparison) return new BadRequestObjectResult(new Response { ErrorMessage = "Неверный пароль" });
+        if (!passwordComparison) 
+            throw new BadRequestException("Неверный пароль");
 
         existUser.LastLoginDate = DateTime.Now;
 
@@ -113,11 +112,10 @@ public class UserService : IUserService
 
         string? encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-        return new OkObjectResult(new Response
-            { IsSuccess = true, SuccessMessage = "Вход в аккаунт выполнен", Result = encodedJwt });
+        return encodedJwt;
     }
 
-    public async Task<ObjectResult> GetInformationAsync()
+    public async Task<UserDTO> GetInformationAsync()
     {
         IHeaderDictionary headers = _httpContextAccessor.HttpContext.Request.Headers;
 
@@ -133,24 +131,19 @@ public class UserService : IUserService
         {
             existUser = await _userRepository.GetSingleAsync(email.ToLower());
             if (existUser is null)
-                return new NotFoundObjectResult(new Response { ErrorMessage = "Пользователь с таким Email не найден" });
+                throw new NotFoundException("Пользователь с таким Email не найден");
         }
         else
-            return new BadRequestObjectResult(new Response { ErrorMessage = "Некорректный токен" });
+            throw new BadRequestException("Некорректный токен");
 
-        return new OkObjectResult(new Response
-            {
-                IsSuccess = true,
-                Result = new UserDTO
-                {
-                    Id = existUser.Id,
-                    FirstName = existUser.FirstName,
-                    LastName = existUser.LastName,
-                    Email = existUser.Email,
-                    LastLoginDate = existUser.LastLoginDate,
-                    LastLoginIP = existUser.LastLoginIp
-                }
-            }
-        );
+        return new UserDTO
+        {
+            Id = existUser.Id,
+            FirstName = existUser.FirstName,
+            LastName = existUser.LastName,
+            Email = existUser.Email,
+            LastLoginDate = existUser.LastLoginDate,
+            LastLoginIP = existUser.LastLoginIp
+        };
     }
 }

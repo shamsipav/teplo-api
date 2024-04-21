@@ -1,14 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SweetAPI.Models;
+﻿using TeploAPI.Dtos;
 using TeploAPI.Models;
 
 namespace TeploAPI.Interfaces;
 
 public interface IUserService
 {
-    Task<ObjectResult> RegisterAsync(User user);
+    Task<User> RegisterAsync(User user);
     
-    Task<ObjectResult> AuthenticateAsync(Login login);
+    /// <summary>
+    /// Аутентификация пользователя
+    /// </summary>
+    /// <returns>JWT-токен</returns>
+    Task<string> AuthenticateAsync(Login login);
     
-    Task<ObjectResult> GetInformationAsync();
+    Task<UserDTO> GetInformationAsync();
 }

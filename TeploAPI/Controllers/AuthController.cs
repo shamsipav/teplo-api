@@ -2,7 +2,7 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SweetAPI.Models;
+using TeploAPI.Dtos;
 using TeploAPI.Filters;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
@@ -10,14 +10,14 @@ using TeploAPI.Models;
 namespace TeploAPI.Controllers
 {
     /// <summary>
-    /// Авторизация и аутентификация пользователя
+    /// Аутентификация и авторизация пользователя
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     [CustomExceptionFilter]
     public class AuthController : ControllerBase
     {
-        private IValidator<User> _validator;
+        private readonly IValidator<User> _validator;
         private readonly IUserService _userService;
         public AuthController( IUserService userService, IValidator<User> validator)
         {
@@ -36,7 +36,9 @@ namespace TeploAPI.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Errors[0].ErrorMessage);
             
-            return await _userService.RegisterAsync(user);
+            await _userService.RegisterAsync(user);
+
+            return Ok(new Response { IsSuccess = true, SuccessMessage = "Пользователь успешно зарегистрирован" });
         }
 
         /// <summary>
@@ -45,7 +47,9 @@ namespace TeploAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Post(Login login)
         {
-            return await _userService.AuthenticateAsync(login);
+            string encodedJwt = await _userService.AuthenticateAsync(login);
+            
+            return Ok(new Response { IsSuccess = true, SuccessMessage = "Вход в аккаунт выполнен", Result = encodedJwt });
         }
 
         /// <summary>
@@ -55,7 +59,9 @@ namespace TeploAPI.Controllers
         [HttpGet("user")]
         public async Task<IActionResult> Get()
         {
-            return await _userService.GetInformationAsync();
+            UserDTO userInfo = await _userService.GetInformationAsync();
+
+            return Ok(new Response { IsSuccess = true, Result = userInfo });
         }
     }
 }

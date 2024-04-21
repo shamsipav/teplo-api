@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SweetAPI.Models;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
 

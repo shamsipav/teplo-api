@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Serilog;
+using TeploAPI.Exceptions;
 using TeploAPI.Models;
 
 namespace TeploAPI.Filters;
@@ -23,7 +24,24 @@ public class CustomExceptionFilterAttribute: Attribute, IExceptionFilter
         };
         context.ExceptionHandled = true;
 
-        context.Result = new StatusCodeResult(500);
-        context.Result = new ObjectResult(new Response { ErrorMessage = exceptionMessage });
+        int statusCode = 500;
+
+        switch (context.Exception)
+        {
+            case NotFoundException _:
+                statusCode = 404;
+                break;
+            case BadRequestException _:
+                statusCode = 400;
+                break;
+            case BusinessLogicException _:
+                statusCode = 500;
+                break;
+        }
+        
+        context.Result = new ObjectResult(new Response { Status = statusCode, ErrorMessage = exceptionMessage })
+        {
+            StatusCode = statusCode
+        };
     }
 }
