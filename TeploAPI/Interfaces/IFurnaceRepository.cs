@@ -6,7 +6,7 @@ public interface IFurnaceRepository
 {
     IQueryable<Furnace> GetAll(Guid userId);
 
-     Task<Furnace> GetSingleAsync(Guid id);
+    Task<Furnace> GetSingleAsync(Guid id);
 
     Task<Furnace> AddAsync(Furnace furnace);
 

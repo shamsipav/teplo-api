@@ -14,6 +14,7 @@ namespace TeploAPI.Controllers
     public class BaseController : ControllerBase
     {
         private IBasePeriodService _basePeriodService;
+
         public BaseController(IBasePeriodService basePeriodService)
         {
             _basePeriodService = basePeriodService;
@@ -26,7 +27,7 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> PostAsync(FurnaceBaseParam furnaceBase, bool save)
         {
             ResultViewModel result = await _basePeriodService.ProcessBasePeriod(furnaceBase, save);
-            
+
             return Ok(new Response { IsSuccess = true, Result = result });
         }
 
@@ -37,9 +38,9 @@ namespace TeploAPI.Controllers
         /// <param name="comparativePeriodId">Идентификатор сравнительного периода</param>
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> ComparisonAsync(string basePeriodId, string comparativePeriodId)
+        public async Task<IActionResult> ComparisonAsync(Guid basePeriodId, Guid comparativePeriodId)
         {
-            UnionResultViewModel result = await _basePeriodService.ProcessComparativePeriod(Guid.Parse(basePeriodId), Guid.Parse(comparativePeriodId));
+            UnionResultViewModel result = await _basePeriodService.ProcessComparativePeriod(basePeriodId, comparativePeriodId);
 
             return Ok(new Response { IsSuccess = true, Result = result });
         }

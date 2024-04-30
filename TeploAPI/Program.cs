@@ -18,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .WriteTo.File("Logs\\log.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.File(Path.Combine(AppContext.BaseDirectory, "logs\\log.txt"), rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Services.AddEntityFrameworkNpgsql().AddDbContext<TeploDBContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("TeploAPIConnection")));

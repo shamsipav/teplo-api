@@ -14,6 +14,7 @@ namespace TeploAPI.Controllers
     public class DailyController : ControllerBase
     {
         private readonly IFurnaceWorkParamsService _furnaceWorkParamsService;
+
         public DailyController(IFurnaceWorkParamsService furnaceWorkParamsService)
         {
             _furnaceWorkParamsService = furnaceWorkParamsService;
@@ -25,18 +26,18 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            List<FurnaceBaseParam> dailyInfoList = await _furnaceWorkParamsService.GetAll( true);
+            List<FurnaceBaseParam> dailyInfoList = await _furnaceWorkParamsService.GetAll(true);
 
             return Ok(new Response { IsSuccess = true, Result = dailyInfoList });
         }
-        
+
         /// <summary>
         /// Получение посуточной информации по идентификатору
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(string? id)
+        public async Task<IActionResult> GetByIdAsync(Guid id)
         {
-            FurnaceBaseParam dailyInfo = await _furnaceWorkParamsService.GetSingleAsync(Guid.Parse(id));
+            FurnaceBaseParam dailyInfo = await _furnaceWorkParamsService.GetSingleAsync(id);
 
             if (dailyInfo == null)
                 return NotFound(new Response { ErrorMessage = $"Не удалось найти посуточную информацию с идентификатором id = '{id}'" });
@@ -54,14 +55,14 @@ namespace TeploAPI.Controllers
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = "Суточная информация успешно обновлена", Result = dailyInfo });
         }
-        
+
         /// <summary>
         /// Удаление посуточной информации из справочника
         /// </summary>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(string? id)
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
-            FurnaceBaseParam deletedFurnaceBaseParam = await _furnaceWorkParamsService.RemoveAsync(Guid.Parse(id));
+            FurnaceBaseParam deletedFurnaceBaseParam = await _furnaceWorkParamsService.RemoveAsync(id);
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = $"Посуточная информация за {deletedFurnaceBaseParam.Day.ToString("dd.MM.yyyy")} успешно удалена", Result = deletedFurnaceBaseParam });
         }

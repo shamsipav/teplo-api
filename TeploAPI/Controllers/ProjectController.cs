@@ -34,8 +34,6 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> PostAsync(FurnaceProjectParam projectPeriodFurnaceData, Guid inputDataId)
         {
             Guid uid = User.GetUserId();
-            if (uid.Equals(Guid.Empty))
-                return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
             var basePeriodFurnaceData = new FurnaceBaseParam();
             var basePeriodFurnaceDataClear = new FurnaceBaseParam();

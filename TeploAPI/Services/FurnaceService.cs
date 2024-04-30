@@ -57,7 +57,6 @@ namespace TeploAPI.Services
             existFurnace.HeightOfShaft = furnace.HeightOfShaft;
             existFurnace.HeightOfColoshnik = furnace.HeightOfColoshnik;
 
-
             _furnaceRepository.Update(furnace);
             await _furnaceRepository.SaveChangesAsync();
 

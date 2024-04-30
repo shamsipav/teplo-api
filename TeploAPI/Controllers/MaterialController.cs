@@ -19,6 +19,7 @@ namespace TeploAPI.Controllers
     {
         private IValidator<Material> _validator;
         private TeploDBContext _context;
+
         public MaterialController(TeploDBContext context, IValidator<Material> validator)
         {
             _context = context;
@@ -33,8 +34,6 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> GetAsync()
         {
             Guid uid = User.GetUserId();
-            if (uid.Equals(Guid.Empty))
-                return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
             var materials = new List<Material>();
             try
@@ -59,8 +58,6 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> CreateAsync(Material material)
         {
             Guid uid = User.GetUserId();
-            if (uid.Equals(Guid.Empty))
-                return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
 
             if (material == null)
                 return BadRequest(new Response { ErrorMessage = "Отсутсвуют значения для добавления материала в справочник" });

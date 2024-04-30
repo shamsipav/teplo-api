@@ -10,7 +10,7 @@ public static class ClaimsPrincipalExtentions
         
         if (Guid.TryParse(userId, out Guid parsedGuid))
             return parsedGuid;
-        
-        return Guid.Empty;
+
+        throw new Exception("Не удалось найти идентификатор пользователя в Claims");
     }
 }

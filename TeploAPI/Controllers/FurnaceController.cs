@@ -4,7 +4,6 @@ using TeploAPI.Filters;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
-using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Controllers
 {
@@ -14,8 +13,8 @@ namespace TeploAPI.Controllers
     [CustomExceptionFilter]
     public class FurnaceController : ControllerBase
     {
-        // TODO: Добавить валидатор
         private readonly IFurnaceService _furnaceService;
+
         public FurnaceController(IFurnaceService furnaceService)
         {
             _furnaceService = furnaceService;
@@ -29,7 +28,7 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> GetAsync()
         {
             List<Furnace> furnaces = await _furnaceService.GetAll();
-                
+
             return Ok(new Response { IsSuccess = true, Result = furnaces });
         }
 
@@ -41,10 +40,6 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(Furnace furnace)
         {
-            Guid uid = User.GetUserId();
-            if (uid.Equals(Guid.Empty))
-                return StatusCode(401, new Response { ErrorMessage = "Не удалось найти идентификатор пользователя в Claims" });
-
             //ValidationResult validationResult = await _validator.ValidateAsync(material);
 
             //if (!validationResult.IsValid)
@@ -72,7 +67,7 @@ namespace TeploAPI.Controllers
             //    return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
 
             Furnace updatedFurnace = await _furnaceService.UpdateFurnaceAsync(furnace);
-            
+
             if (updatedFurnace == null)
                 return NotFound(StatusCode(500, new Response { ErrorMessage = $"Не удалось найти информацию о печи с идентификатором id = '{furnace.Id}'" }));
 
@@ -85,9 +80,9 @@ namespace TeploAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(string? id)
+        public async Task<IActionResult> GetByIdAsync(Guid id)
         {
-            Furnace furnace = await _furnaceService.GetSingleFurnaceAsync(Guid.Parse(id));
+            Furnace furnace = await _furnaceService.GetSingleFurnaceAsync(id);
 
             if (furnace == null)
                 return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о печи с идентификатором id = '{id}'" });
@@ -101,10 +96,10 @@ namespace TeploAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(string? id)
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
-            Furnace deletedFurnace = await _furnaceService.RemoveFurnaceAsync(Guid.Parse(id));
-            
+            Furnace deletedFurnace = await _furnaceService.RemoveFurnaceAsync(id);
+
             return Ok(new Response { IsSuccess = true, SuccessMessage = $"Печь №{deletedFurnace.NumberOfFurnace} успешно удалена", Result = deletedFurnace });
         }
     }
