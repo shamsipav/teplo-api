@@ -19,9 +19,14 @@ public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : clas
         return await _dbSet.ToListAsync();
     }
     
-    public IEnumerable<TEntity> GetAsync(Func<TEntity,bool> predicate)
+    public IEnumerable<TEntity> Get(Func<TEntity,bool> predicate)
     {
         return _dbSet.Where(predicate).ToList();
+    }
+    
+    public TEntity GetSingle(Func<TEntity,bool> predicate)
+    {
+        return _dbSet.Where(predicate).FirstOrDefault();
     }
 
     public async Task<TEntity> GetByIdAsync(Guid id)

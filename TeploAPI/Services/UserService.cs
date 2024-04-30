@@ -8,20 +8,30 @@ using TeploAPI.Exceptions;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
-using TeploAPI.Repositories.Interfaces;
 using TeploAPI.Utils;
 
 namespace TeploAPI.Services;
 
 public class UserService : IUserService
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IRepository<User> _userRepository;
+    private readonly IRepository<CokeCunsumptionReference> _cokeConsumptionReferenceRepository;
+    private readonly IRepository<FurnaceCapacityReference> _furnaceCapacityReferenceRepository;
+    private readonly IRepository<Furnace> _furnaceRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IValidator<User> _validator;
 
-    public UserService(IUserRepository userRepository, IHttpContextAccessor httpContextAccessor, IValidator<User> validator)
+    public UserService(IRepository<User> userRepository,
+        IHttpContextAccessor httpContextAccessor,
+        IValidator<User> validator,
+        IRepository<CokeCunsumptionReference> cokeConsumptionReferenceRepository,
+        IRepository<FurnaceCapacityReference> furnaceCapacityReferenceRepository,
+        IRepository<Furnace> furnaceRepository)
     {
         _userRepository = userRepository;
+        _cokeConsumptionReferenceRepository = cokeConsumptionReferenceRepository;
+        _furnaceCapacityReferenceRepository = furnaceCapacityReferenceRepository;
+        _furnaceRepository = furnaceRepository;
         _httpContextAccessor = httpContextAccessor;
         _validator = validator;
     }
@@ -32,8 +42,8 @@ public class UserService : IUserService
 
         if (!validationResult.IsValid)
             throw new BadRequestException(validationResult.Errors[0].ErrorMessage);
-        
-        User existUser = await _userRepository.GetSingleAsync(user.Email);
+
+        User existUser = _userRepository.GetSingle(u => u.Email == user.Email);
 
         if (existUser != null)
             throw new BusinessLogicException("Пользователь с таким Email уже зарегистрирован");
@@ -46,7 +56,6 @@ public class UserService : IUserService
         user.LastLoginIp = _httpContextAccessor.HttpContext.Request.Host.ToString();
 
         user = await _userRepository.AddAsync(user);
-        await _userRepository.SaveChangesAsync();
 
         // TODO: Разнести логику ниже по разным сервисам
         var cokeCoefficients = CokeCunsumptionReference.GetDefaultData();
@@ -73,10 +82,9 @@ public class UserService : IUserService
         furnaceCoefficients.UserId = user.Id;
         defaultFurnace.UserId = user.Id;
 
-        // await _context.CokeCunsumptionReferences.AddAsync(cokeCoefficients);
-        // await _context.FurnanceCapacityReferences.AddAsync(furnaceCoefficients);
-        // await _context.Furnaces.AddAsync(defaultFurnace);
-        // await _context.SaveChangesAsync();
+        await _cokeConsumptionReferenceRepository.AddAsync(cokeCoefficients);
+        await _furnaceCapacityReferenceRepository.AddAsync(furnaceCoefficients);
+        await _furnaceRepository.AddAsync(defaultFurnace);
 
         return user;
     }
@@ -92,21 +100,19 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(password))
             throw new BadRequestException("Password яляется обязательным полем");
 
-        User existUser = await _userRepository.GetSingleAsync(email.ToLower());
+        User existUser = _userRepository.GetSingle(u => u.Email == email.ToLower());
         if (existUser is null)
             throw new NotFoundException("Пользователь с таким Email не найден");
 
         bool passwordComparison = BCrypt.Net.BCrypt.Verify(password, existUser.Password);
-        if (!passwordComparison) 
+        if (!passwordComparison)
             throw new BadRequestException("Неверный пароль");
 
         existUser.LastLoginDate = DateTime.Now;
 
-        _userRepository.Update(existUser);
-        await _userRepository.SaveChangesAsync();
+        await _userRepository.UpdateAsync(existUser);
 
-        List<Claim> claims = new List<Claim>
-            { new Claim(ClaimTypes.Name, email), new Claim(ClaimTypes.NameIdentifier, existUser.Id.ToString()) };
+        List<Claim> claims = new List<Claim> { new Claim(ClaimTypes.Name, email), new Claim(ClaimTypes.NameIdentifier, existUser.Id.ToString()) };
 
         DateTime timeNow = DateTime.UtcNow;
 
@@ -138,7 +144,7 @@ public class UserService : IUserService
 
         if (email != null)
         {
-            existUser = await _userRepository.GetSingleAsync(email.ToLower());
+            existUser = _userRepository.GetSingle(u => u.Email == email.ToLower());
             if (existUser is null)
                 throw new NotFoundException("Пользователь с таким Email не найден");
         }

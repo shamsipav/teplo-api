@@ -10,7 +10,12 @@ public interface IRepository<TEntity> where TEntity : class
     /// <summary>
     /// Получить все объекты, соответствующие лямбда-выражению
     /// </summary>
-    IEnumerable<TEntity> GetAsync(Func<TEntity,bool> predicate);
+    IEnumerable<TEntity> Get(Func<TEntity,bool> predicate);
+
+    /// <summary>
+    /// Получить первый попавшийся объект, соответствующие лямбда-выражению
+    /// </summary>
+    TEntity GetSingle(Func<TEntity, bool> predicate);
 
     /// <summary>
     /// Получение объекта по его идентификатору
