@@ -59,8 +59,8 @@ builder.Services.AddSwaggerGen(c =>
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
-            }, new string[] {}
-
+            },
+            new string[] { }
         }
     });
 });
@@ -86,9 +86,11 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 // Репозитории
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IFurnaceWorkParamsRepository, FurnaceWorkParamsRepository>();
-builder.Services.AddScoped<IFurnaceRepository, FurnaceRepository>();
+builder.Services.AddScoped<IRepository<User>, MainRepository<User>>();
+builder.Services.AddScoped<IRepository<FurnaceBaseParam>, MainRepository<FurnaceBaseParam>>();
+builder.Services.AddScoped<IRepository<Furnace>, MainRepository<Furnace>>();
+builder.Services.AddScoped<IRepository<CokeCunsumptionReference>, MainRepository<CokeCunsumptionReference>>();
+builder.Services.AddScoped<IRepository<FurnaceCapacityReference>, MainRepository<FurnaceCapacityReference>>();
 
 // Сервисы
 builder.Services.AddScoped<IFurnaceService, FurnaceService>();

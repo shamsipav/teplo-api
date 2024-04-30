@@ -1,17 +1,15 @@
 ﻿using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
 using TeploAPI.Interfaces;
 using TeploAPI.Models.Furnace;
-using TeploAPI.Repositories.Interfaces;
 using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Services
 {
     public class FurnaceService : IFurnaceService
     {
-        private readonly IFurnaceRepository _furnaceRepository;
+        private readonly IRepository<Furnace> _furnaceRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public FurnaceService(IFurnaceRepository furnaceRepository, IHttpContextAccessor httpContextAccessor)
+        public FurnaceService(IRepository<Furnace> furnaceRepository, IHttpContextAccessor httpContextAccessor)
         {
             _furnaceRepository = furnaceRepository;
             _httpContextAccessor = httpContextAccessor;
@@ -22,7 +20,7 @@ namespace TeploAPI.Services
         public async Task<List<Furnace>> GetAll()
         {
             Guid userId = _user.GetUserId();
-            return await _furnaceRepository.GetAll(userId).ToListAsync();
+            return _furnaceRepository.Get(f => f.UserId == userId).ToList();
         }
 
         public async Task<Furnace> CreateFurnaceAsync(Furnace furnace)
@@ -37,7 +35,7 @@ namespace TeploAPI.Services
 
         public async Task<Furnace> UpdateFurnaceAsync(Furnace furnace)
         {
-            Furnace existFurnace = await _furnaceRepository.GetSingleAsync(furnace.Id);
+            Furnace existFurnace = await _furnaceRepository.GetByIdAsync(furnace.Id);
 
             if (existFurnace == null)
             {
@@ -57,7 +55,7 @@ namespace TeploAPI.Services
             existFurnace.HeightOfShaft = furnace.HeightOfShaft;
             existFurnace.HeightOfColoshnik = furnace.HeightOfColoshnik;
 
-            _furnaceRepository.Update(furnace);
+            _furnaceRepository.UpdateAsync(furnace);
             await _furnaceRepository.SaveChangesAsync();
 
             return furnace;
@@ -65,12 +63,12 @@ namespace TeploAPI.Services
 
         public async Task<Furnace> GetSingleFurnaceAsync(Guid id)
         {
-            return await _furnaceRepository.GetSingleAsync(id);
+            return await _furnaceRepository.GetByIdAsync(id);
         }
         
         public async Task<Furnace> RemoveFurnaceAsync(Guid id)
         {
-            Furnace deletedFurnace = await _furnaceRepository.Delete(id);
+            Furnace deletedFurnace = await _furnaceRepository.DeleteAsync(id);
             await _furnaceRepository.SaveChangesAsync();
 
             return deletedFurnace;

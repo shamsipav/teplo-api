@@ -57,7 +57,7 @@ public class UserService : IUserService
 
         user = await _userRepository.AddAsync(user);
 
-        // TODO: Разнести логику ниже по разным сервисам
+        // TODO: Возможно, стоит разнести логику ниже по разным сервисам
         var cokeCoefficients = CokeCunsumptionReference.GetDefaultData();
         var furnaceCoefficients = FurnaceCapacityReference.GetDefaultData();
 

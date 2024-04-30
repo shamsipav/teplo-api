@@ -12,11 +12,11 @@ namespace TeploAPI.Services;
 
 public class FurnaceWorkParamsService : IFurnaceWorkParamsService
 {
-    private readonly IFurnaceWorkParamsRepository _furnaceWorkParamsRepository;
+    private readonly IRepository<FurnaceBaseParam> _furnaceWorkParamsRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private IValidator<FurnaceBaseParam> _validator;
 
-    public FurnaceWorkParamsService(IFurnaceWorkParamsRepository furnaceWorkParamsRepository, IHttpContextAccessor httpContextAccessor, IValidator<FurnaceBaseParam> validator)
+    public FurnaceWorkParamsService(IRepository<FurnaceBaseParam> furnaceWorkParamsRepository, IHttpContextAccessor httpContextAccessor, IValidator<FurnaceBaseParam> validator)
     {
         _furnaceWorkParamsRepository = furnaceWorkParamsRepository;
         _httpContextAccessor = httpContextAccessor;
@@ -62,17 +62,17 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
     public async Task<List<FurnaceBaseParam>> GetAll(bool isDaily = false)
     {
         Guid userId = _user.GetUserId();
-        return await _furnaceWorkParamsRepository.GetAll(userId, isDaily).ToListAsync();
+        return _furnaceWorkParamsRepository.Get(p => p.UserId == userId && p.Day != DateTime.MinValue).ToList();
     }
 
     public async Task<FurnaceBaseParam> GetSingleAsync(Guid id)
     {
-        return await _furnaceWorkParamsRepository.GetSingleAsync(id);
+        return await _furnaceWorkParamsRepository.GetByIdAsync(id);
     }
 
     public async Task<FurnaceBaseParam> GetSingleAsync(Guid id, DateTime day)
     {
-        return await _furnaceWorkParamsRepository.GetSingleAsync(id, day);
+        return _furnaceWorkParamsRepository.GetSingle(p => p.Id == id && p.Day == day);
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
     /// <returns></returns>
     public async Task<FurnaceBaseParam> UpdateAsync(FurnaceBaseParam furnace)
     {
-        FurnaceBaseParam existBaseParam = await _furnaceWorkParamsRepository.GetSingleAsync(furnace.Id);
+        FurnaceBaseParam existBaseParam = await _furnaceWorkParamsRepository.GetByIdAsync(furnace.Id);
         
         existBaseParam.NumberOfFurnace = furnace.NumberOfFurnace;
         existBaseParam.UsefulVolumeOfFurnace = furnace.UsefulVolumeOfFurnace;
@@ -145,7 +145,7 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
 
     public async Task<FurnaceBaseParam> RemoveAsync(Guid id)
     {
-        FurnaceBaseParam deletedFurnaceParam = await _furnaceWorkParamsRepository.Delete(id);
+        FurnaceBaseParam deletedFurnaceParam = await _furnaceWorkParamsRepository.DeleteAsync(id);
         await _furnaceWorkParamsRepository.SaveChangesAsync();
 
         return deletedFurnaceParam;
