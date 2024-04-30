@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TeploAPI.Interfaces;
-using TeploAPI.Models;
 
 namespace TeploAPI.Repositories;
 
@@ -15,10 +14,14 @@ public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : clas
         _dbSet = _dbContext.Set<TEntity>();
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync(Guid userId)
+    public async Task<IEnumerable<TEntity>> GetAllAsync()
     {
-        // TODO: Привязать к пользователю
         return await _dbSet.ToListAsync();
+    }
+    
+    public IEnumerable<TEntity> GetAsync(Func<TEntity,bool> predicate)
+    {
+        return _dbSet.Where(predicate).ToList();
     }
 
     public async Task<TEntity> GetByIdAsync(Guid id)
@@ -35,7 +38,7 @@ public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : clas
     
     public async Task<TEntity> UpdateAsync(TEntity entity)
     {
-        _dbSet.Update(entity);
+        _dbContext.Entry(entity).State = EntityState.Modified;
         await _dbContext.SaveChangesAsync();
 
         return entity;
