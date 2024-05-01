@@ -23,12 +23,12 @@ public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : clas
     public IQueryable<TEntity> Get(Func<TEntity, bool> predicate)
     {
         // TODO: Подумать над оптимизацией
-        return _dbSet.Where(predicate).AsQueryable();
+        return _dbSet.AsNoTracking().Where(predicate).AsQueryable();
     }
 
     public TEntity GetSingle(Func<TEntity, bool> predicate)
     {
-        return _dbSet.Where(predicate).FirstOrDefault();
+        return _dbSet.AsNoTracking().Where(predicate).FirstOrDefault();
     }
 
     public async Task<TEntity> GetByIdAsync(Guid id)

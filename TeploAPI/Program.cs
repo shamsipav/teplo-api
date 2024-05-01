@@ -9,7 +9,6 @@ using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
 using TeploAPI.Models.Validators;
 using TeploAPI.Repositories;
-using TeploAPI.Repositories.Interfaces;
 using TeploAPI.Services;
 using TeploAPI.Utils;
 
@@ -96,6 +95,7 @@ builder.Services.AddScoped<IRepository<Material>, MainRepository<Material>>();
 // Сервисы
 builder.Services.AddScoped<IFurnaceService, FurnaceService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
+builder.Services.AddScoped<IProjectPeriodService, ProjectPeriodService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReferenceCoefficientsService, ReferenceService>();
 builder.Services.AddScoped<IFurnaceWorkParamsService, FurnaceWorkParamsService>();

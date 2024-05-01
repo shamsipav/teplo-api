@@ -31,7 +31,7 @@ public class BasePeriodService : IBasePeriodService
 
         if (!validationResult.IsValid)
             throw new BadRequestException(validationResult.Errors[0].ErrorMessage);
-        
+
         // Обновление существующего варианта исходных данных
         // Кейс отрабатывает при услови, когда передается вариант исходных данных, уже сохраненный до этого в БД,
         // Но с флагом save == true
@@ -48,6 +48,7 @@ public class BasePeriodService : IBasePeriodService
         }
 
         // TODO: Проверить, авторизован ли пользователь перед этим действием
+        // TODO: Вынести в отдельный класс (?)
         await UpdateInputDataByFurnace(furnaceBase);
 
         Result calculateResult = _calculateService.СalculateThermalRegime(furnaceBase);
@@ -59,7 +60,7 @@ public class BasePeriodService : IBasePeriodService
     {
         if (basePeriodId == comparativePeriodId)
             throw new BadRequestException("Необходимо указать разные варианты данных или посуточной информации");
-        
+
         // Получение наборов исходных данных для двух периодов.
         FurnaceBaseParam basePeriodFurnace = await _furnaceWorkParamsService.GetSingleAsync(basePeriodId);
         FurnaceBaseParam comparativePeriodFurnance = await _furnaceWorkParamsService.GetSingleAsync(comparativePeriodId);
