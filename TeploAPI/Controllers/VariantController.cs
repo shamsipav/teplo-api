@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 using TeploAPI.Filters;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
@@ -10,12 +9,14 @@ using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Controllers
 {
+    // TODO: В контроллерах логику вынести в сервис IFurnaceWorkParamsService
     [ApiController]
     [Route("api/[controller]")]
     [CustomExceptionFilter]
     public class VariantController : ControllerBase
     {
         private TeploDBContext _context;
+
         public VariantController(TeploDBContext context)
         {
             _context = context;
@@ -32,11 +33,11 @@ namespace TeploAPI.Controllers
             Guid uid = User.GetUserId();
 
             List<FurnaceBaseParam> variants = await _context.FurnacesWorkParams
-                                                            .AsNoTracking()
-                                                            .Include(i => i.MaterialsWorkParamsList)
-                                                            .Where(v => v.UserId.Equals(uid) && v.Day == DateTime.MinValue)
-                                                            .OrderBy(v => v.SaveDate)
-                                                            .ToListAsync();
+                .AsNoTracking()
+                .Include(i => i.MaterialsWorkParamsList)
+                .Where(v => v.UserId.Equals(uid) && v.Day == DateTime.MinValue)
+                .OrderBy(v => v.SaveDate)
+                .ToListAsync();
 
             return Ok(new Response { IsSuccess = true, Result = variants });
         }
@@ -63,21 +64,20 @@ namespace TeploAPI.Controllers
         [HttpDelete("{variantId}")]
         public async Task<IActionResult> DeleteAsync(Guid variantId)
         {
-            if (variantId == null) 
+            if (variantId == null)
                 return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию об варианте расчета с идентификатором id = '{variantId}'" });
-            
+
             FurnaceBaseParam variant = await _context.FurnacesWorkParams
                 .Include(i => i.MaterialsWorkParamsList)
                 .FirstOrDefaultAsync(v => v.Id.Equals(variantId) && v.Day == DateTime.MinValue);
 
-            if (variant == null) 
+            if (variant == null)
                 return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию об варианте расчета с идентификатором id = '{variantId}'" });
-                
+
             _context.FurnacesWorkParams.Remove(variant);
             await _context.SaveChangesAsync();
 
             return Ok(new Response { IsSuccess = true, Result = variant, SuccessMessage = $"Вариант исходных данных \"{variant.Name}\" удален" });
-
         }
     }
 }
