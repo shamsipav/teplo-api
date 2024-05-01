@@ -154,12 +154,12 @@ namespace TeploAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(string? id)
+        public async Task<IActionResult> GetByIdAsync(Guid id)
         {
             var material = new Material();
             try
             {
-                material = await _context.Materials.AsNoTracking().FirstOrDefaultAsync(m => m.Id.Equals(Guid.Parse(id)));
+                material = await _context.Materials.AsNoTracking().FirstOrDefaultAsync(m => m.Id.Equals(id));
             }
             catch (Exception ex)
             {
@@ -181,7 +181,7 @@ namespace TeploAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(string? id)
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
             if (id != null)
             {
@@ -189,7 +189,7 @@ namespace TeploAPI.Controllers
 
                 try
                 {
-                    material = await _context.Materials.FirstOrDefaultAsync(d => d.Id.Equals(Guid.Parse(id)));
+                    material = await _context.Materials.FirstOrDefaultAsync(d => d.Id.Equals(id));
                 }
                 catch (Exception ex)
                 {

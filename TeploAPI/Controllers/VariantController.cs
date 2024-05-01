@@ -82,7 +82,7 @@ namespace TeploAPI.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpDelete("{variantId}")]
-        public async Task<IActionResult> DeleteAsync(string variantId)
+        public async Task<IActionResult> DeleteAsync(Guid variantId)
         {
             if (variantId != null)
             {
@@ -94,7 +94,7 @@ namespace TeploAPI.Controllers
                     // По-умолчанию в DateTime устанавливается DateTime.MinValue
                     variant = await _context.FurnacesWorkParams
                                             .Include(i => i.MaterialsWorkParamsList)
-                                            .FirstOrDefaultAsync(v => v.Id.Equals(Guid.Parse(variantId)) && v.Day == DateTime.MinValue);
+                                            .FirstOrDefaultAsync(v => v.Id.Equals(variantId) && v.Day == DateTime.MinValue);
                 }
                 catch (Exception ex)
                 {
