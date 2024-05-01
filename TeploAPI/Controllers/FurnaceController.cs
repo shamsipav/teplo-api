@@ -40,11 +40,6 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(Furnace furnace)
         {
-            //ValidationResult validationResult = await _validator.ValidateAsync(material);
-
-            //if (!validationResult.IsValid)
-            //    return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
-
             Furnace createdFurnace = await _furnaceService.CreateFurnaceAsync(furnace);
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = $"Печь №{furnace.NumberOfFurnace} успешно добавлена", Result = createdFurnace });
@@ -58,18 +53,7 @@ namespace TeploAPI.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateByIdAsync(Furnace furnace)
         {
-            if (furnace == null)
-                return BadRequest(new Response { ErrorMessage = "Отсутсвуют значения для обновления материала в справочнике" });
-
-            //ValidationResult validationResult = await _validator.ValidateAsync(material);
-
-            //if (!validationResult.IsValid)
-            //    return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
-
             Furnace updatedFurnace = await _furnaceService.UpdateFurnaceAsync(furnace);
-
-            if (updatedFurnace == null)
-                return NotFound(StatusCode(500, new Response { ErrorMessage = $"Не удалось найти информацию о печи с идентификатором id = '{furnace.Id}'" }));
 
             return Ok(new Response { IsSuccess = true, SuccessMessage = "Изменения успешно применены", Result = updatedFurnace });
         }
@@ -83,9 +67,6 @@ namespace TeploAPI.Controllers
         public async Task<IActionResult> GetByIdAsync(Guid id)
         {
             Furnace furnace = await _furnaceService.GetSingleFurnaceAsync(id);
-
-            if (furnace == null)
-                return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о печи с идентификатором id = '{id}'" });
 
             return Ok(new Response { IsSuccess = true, Result = furnace });
         }

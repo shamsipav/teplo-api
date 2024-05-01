@@ -91,9 +91,11 @@ builder.Services.AddScoped<IRepository<FurnaceBaseParam>, MainRepository<Furnace
 builder.Services.AddScoped<IRepository<Furnace>, MainRepository<Furnace>>();
 builder.Services.AddScoped<IRepository<CokeCunsumptionReference>, MainRepository<CokeCunsumptionReference>>();
 builder.Services.AddScoped<IRepository<FurnaceCapacityReference>, MainRepository<FurnaceCapacityReference>>();
+builder.Services.AddScoped<IRepository<Material>, MainRepository<Material>>();
 
 // Сервисы
 builder.Services.AddScoped<IFurnaceService, FurnaceService>();
+builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReferenceCoefficientsService, ReferenceService>();
 builder.Services.AddScoped<IFurnaceWorkParamsService, FurnaceWorkParamsService>();
@@ -107,9 +109,10 @@ builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();
 
 var app = builder.Build();
 
+var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>();
+
 app.UseCors(builder => builder
-    // TODO: Плохо, что адрес UI вбит гвоздями
-    .WithOrigins("http://0.0.0.0:5173")
+    .WithOrigins(origins)
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials()

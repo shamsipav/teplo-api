@@ -18,7 +18,7 @@ public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : clas
     {
         return await _dbSet.ToListAsync();
     }
-    
+
     public IEnumerable<TEntity> Get(Func<TEntity,bool> predicate)
     {
         return _dbSet.Where(predicate).ToList();
