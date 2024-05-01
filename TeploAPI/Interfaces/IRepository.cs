@@ -5,17 +5,17 @@ public interface IRepository<TEntity> where TEntity : class
     /// <summary>
     /// Получить все объекты
     /// </summary>
-    Task<IEnumerable<TEntity>> GetAllAsync();
-    
+    IQueryable<TEntity> GetAll();
+
     /// <summary>
     /// Получить все объекты, соответствующие лямбда-выражению
     /// </summary>
-    IEnumerable<TEntity> Get(Func<TEntity,bool> predicate);
+    IQueryable<TEntity> Get(Func<TEntity, bool> predicate);
 
     /// <summary>
-    /// Получить первый попавшийся объект, соответствующие лямбда-выражению
+    /// Получить первый попавшийся объект, соответствующий лямбда-выражению
     /// </summary>
-    TEntity GetSingle(Func<TEntity, bool> predicate);
+    TEntity? GetSingle(Func<TEntity, bool> predicate);
 
     /// <summary>
     /// Получение объекта по его идентификатору

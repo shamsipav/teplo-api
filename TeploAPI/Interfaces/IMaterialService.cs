@@ -7,7 +7,7 @@ public interface IMaterialService
     /// <summary>
     /// Получить данные по всем материалам в справочнике (для текущего пользователя)
     /// </summary>
-    List<Material> GetAllAsync();
+    List<Material> GetAll();
 
     /// <summary>
     /// Добавить материал в справочник (с привязкой к текущему пользователю)

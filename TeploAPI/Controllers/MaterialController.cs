@@ -1,13 +1,8 @@
-﻿using FluentValidation;
-using FluentValidation.Results;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
 using TeploAPI.Filters;
+using TeploAPI.Interfaces;
 using TeploAPI.Models;
-using TeploAPI.Repositories;
-using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Controllers
 {
@@ -17,34 +12,20 @@ namespace TeploAPI.Controllers
     [CustomExceptionFilter]
     public class MaterialController : ControllerBase
     {
-        private IValidator<Material> _validator;
-        private TeploDBContext _context;
+        private readonly IMaterialService _materialService;
 
-        public MaterialController(TeploDBContext context, IValidator<Material> validator)
+        public MaterialController(IMaterialService materialService)
         {
-            _context = context;
-            _validator = validator;
+            _materialService = materialService;
         }
 
         /// <summary>
         /// Получение всех значений справочника шихтовых материалов
         /// </summary>
-        /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        public IActionResult GetAsync()
         {
-            Guid uid = User.GetUserId();
-
-            var materials = new List<Material>();
-            try
-            {
-                materials = await _context.Materials.AsNoTracking().Where(m => m.UserId.Equals(uid)).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"HTTP GET api/material GetAsync: Ошибка получения значений справочника шихтовых материалов: {ex}");
-                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить значения справочника шихтовых материалов" });
-            }
+            List<Material> materials = _materialService.GetAll();
 
             return Ok(new Response { IsSuccess = true, Result = materials });
         }
@@ -52,125 +33,32 @@ namespace TeploAPI.Controllers
         /// <summary>
         /// Добавление материала в справочник шихтовых материалов
         /// </summary>
-        /// <param name="material"></param>
-        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> CreateAsync(Material material)
         {
-            Guid uid = User.GetUserId();
+            Material createdMaterial = await _materialService.CreateMaterialAsync(material);
 
-            if (material == null)
-                return BadRequest(new Response { ErrorMessage = "Отсутсвуют значения для добавления материала в справочник" });
-
-            ValidationResult validationResult = await _validator.ValidateAsync(material);
-
-            if (!validationResult.IsValid)
-                return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
-
-            try
-            {
-                material.UserId = uid;
-                material.BaseOne = material.CaO / material.SiO2;
-
-                await _context.Materials.AddAsync(material);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"HTTP POST api/material CreateAsync: Ошибка добавления материала: {ex}");
-                return StatusCode(500, new Response { ErrorMessage = $"Не удалось добавить материал в справочник" });
-            }
-
-            return Ok(new Response { IsSuccess = true, SuccessMessage = $"Материал '{material.Name}' успешно создан", Result = material });
+            return Ok(new Response { IsSuccess = true, SuccessMessage = $"Материал '{createdMaterial.Name}' успешно создан", Result = createdMaterial });
         }
 
         /// <summary>
         /// Обновление материала в справочнике
         /// </summary>
-        /// <param name="material"></param>
-        /// <returns></returns>
         [HttpPut]
         public async Task<IActionResult> UpdateByIdAsync(Material material)
         {
-            if (material == null)
-                return BadRequest(new Response { ErrorMessage = "Отсутсвуют значения для обновления материала в справочнике" });
+            Material updatedMaterial = await _materialService.UpdateMaterialAsync(material);
 
-            ValidationResult validationResult = await _validator.ValidateAsync(material);
-
-            if (!validationResult.IsValid)
-                return BadRequest(new Response { ErrorMessage = validationResult.Errors[0].ErrorMessage });
-
-            var existMaterial = new Material();
-            try
-            {
-                existMaterial = await _context.Materials.FirstOrDefaultAsync(m => m.Id == material.Id);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"HTTP GET api/material UpdateByIdAsync: Ошибка получения материала с идентификатором id = '{material.Id}: {ex}");
-                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить материал с идентификатором id = '{material.Id}'" });
-            }
-
-            if (existMaterial == null)
-            {
-                return NotFound(StatusCode(500, new Response { ErrorMessage = $"Не удалось найти информацию о материале с идентификатором id = '{material.Id}'" }));
-            }
-
-            try
-            {
-                existMaterial.Name = material.Name;
-                existMaterial.Moisture = material.Moisture;
-                existMaterial.Fe2O3 = material.Fe2O3;
-                existMaterial.Fe = material.Fe;
-                existMaterial.FeO = material.FeO;
-                existMaterial.CaO = material.CaO;
-                existMaterial.SiO2 = material.SiO2;
-                existMaterial.MgO = material.MgO;
-                existMaterial.Al2O3 = material.Al2O3;
-                existMaterial.TiO2 = material.TiO2;
-                existMaterial.MnO = material.MnO;
-                existMaterial.P = material.P;
-                existMaterial.S = material.S;
-                existMaterial.Zn = material.Zn;
-                existMaterial.Mn = material.Mn;
-                existMaterial.Cr = material.Cr;
-                existMaterial.FiveZero = material.FiveZero;
-                existMaterial.BaseOne = material.CaO / material.SiO2;
-
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"HTTP GET api/material UpdateByIdAsync: Ошибка обновления материала с идентификатором id = '{material.Id}: {ex}");
-                return StatusCode(500, new Response { ErrorMessage = $"Не удалось обновить материал с идентификатором id = '{material.Id}'" });
-            }
-
-            return Ok(new Response { IsSuccess = true, SuccessMessage = "Изменения успешно применены", Result = existMaterial });
+            return Ok(new Response { IsSuccess = true, SuccessMessage = "Изменения успешно применены", Result = updatedMaterial });
         }
 
         /// <summary>
         /// Получение определенного материала
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(Guid id)
         {
-            var material = new Material();
-            try
-            {
-                material = await _context.Materials.AsNoTracking().FirstOrDefaultAsync(m => m.Id.Equals(id));
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"HTTP GET api/material GetByIdAsync: Ошибка получения материала с идентификатором id = '{id}: {ex}");
-                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить материал с идентификатором id = '{id}'" });
-            }
-
-            if (material == null)
-            {
-                return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о материале с идентификатором id = '{id}'" });
-            }
+            Material material = await _materialService.GetSingleMaterialAsync(id);
 
             return Ok(new Response { IsSuccess = true, Result = material });
         }
@@ -178,45 +66,12 @@ namespace TeploAPI.Controllers
         /// <summary>
         /// Удаление материала из справочника
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
-            if (id != null)
-            {
-                var material = new Material();
+            Material material = await _materialService.RemoveMaterialAsync(id);
 
-                try
-                {
-                    material = await _context.Materials.FirstOrDefaultAsync(d => d.Id.Equals(id));
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"HTTP DELETE api/material DeleteAsync: Ошибка получения материала для удаления: {ex}");
-                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить материал для удаления: {ex}" });
-                }
-
-                if (material != null)
-                {
-                    try
-                    {
-                        _context.Materials.Remove(material);
-                        await _context.SaveChangesAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"HTTP DELETE api/material DeleteAsync: Ошибка удаления материала: {ex}");
-                        return StatusCode(500, new Response { ErrorMessage = $"Не удалось удалить материал с идентификатором id = '{id}'" });
-                    }
-
-                    return Ok(new Response { IsSuccess = true, SuccessMessage = $"Материал '{material.Name}' успешно удален", Result = material });
-                }
-
-                return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о материале с идентификатором id = '{id}'" });
-            }
-
-            return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию о материале с идентификатором id = '{id}'" });
+            return Ok(new Response { IsSuccess = true, SuccessMessage = $"Материал '{material.Name}' успешно удален", Result = material });
         }
     }
 }

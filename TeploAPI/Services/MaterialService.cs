@@ -10,24 +10,26 @@ namespace TeploAPI.Services
     {
         private readonly IRepository<Material> _materialRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+
         public MaterialService(IRepository<Material> materialRepository, IHttpContextAccessor httpContextAccessor)
         {
             _materialRepository = materialRepository;
             _httpContextAccessor = httpContextAccessor;
         }
-        
+
         private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
 
-        public List<Material> GetAllAsync()
+        public List<Material> GetAll()
         {
             Guid userId = _user.GetUserId();
-            
+
             return _materialRepository.Get(f => f.UserId == userId).ToList();
         }
 
         public async Task<Material> CreateMaterialAsync(Material material)
         {
             material.UserId = _user.GetUserId();
+            material.BaseOne = material.CaO / material.SiO2;
 
             await _materialRepository.AddAsync(material);
 
@@ -74,7 +76,7 @@ namespace TeploAPI.Services
 
             return material;
         }
-        
+
         public async Task<Material> RemoveMaterialAsync(Guid id)
         {
             Material deletedMaterial = await _materialRepository.DeleteAsync(id);

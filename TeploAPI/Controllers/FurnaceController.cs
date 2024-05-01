@@ -25,9 +25,9 @@ namespace TeploAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        public IActionResult GetAsync()
         {
-            List<Furnace> furnaces = await _furnaceService.GetAllAsync();
+            List<Furnace> furnaces = _furnaceService.GetAll();
 
             return Ok(new Response { IsSuccess = true, Result = furnaces });
         }

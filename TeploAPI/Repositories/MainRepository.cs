@@ -7,24 +7,26 @@ public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : clas
 {
     private readonly TeploDBContext _dbContext;
     private readonly DbSet<TEntity> _dbSet;
-    
+
     public MainRepository(TeploDBContext dbContext)
     {
         _dbContext = dbContext;
         _dbSet = _dbContext.Set<TEntity>();
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync()
+    public IQueryable<TEntity> GetAll()
     {
-        return await _dbSet.ToListAsync();
+        // TODO: Подумать над оптимизацией
+        return _dbSet.AsNoTracking();
     }
 
-    public IEnumerable<TEntity> Get(Func<TEntity,bool> predicate)
+    public IQueryable<TEntity> Get(Func<TEntity, bool> predicate)
     {
-        return _dbSet.Where(predicate).ToList();
+        // TODO: Подумать над оптимизацией
+        return _dbSet.Where(predicate).AsQueryable();
     }
-    
-    public TEntity GetSingle(Func<TEntity,bool> predicate)
+
+    public TEntity GetSingle(Func<TEntity, bool> predicate)
     {
         return _dbSet.Where(predicate).FirstOrDefault();
     }
@@ -40,7 +42,7 @@ public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : clas
         await SaveChangesAsync();
         return entity;
     }
-    
+
     public async Task<TEntity> UpdateAsync(TEntity entity)
     {
         _dbContext.Entry(entity).State = EntityState.Modified;
@@ -48,7 +50,7 @@ public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : clas
 
         return entity;
     }
-    
+
     public async Task<TEntity> DeleteAsync(Guid id)
     {
         TEntity? entity = await GetByIdAsync(id);
@@ -60,6 +62,6 @@ public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : clas
 
         return entity;
     }
-    
+
     public async Task SaveChangesAsync() => await _dbContext.SaveChangesAsync();
 }
