@@ -14,38 +14,34 @@ public class ProjectPeriodService : IProjectPeriodService
     private readonly IFurnaceService _furnaceService;
     private readonly ICalculateService _calculateService;
     private readonly IRepository<FurnaceBaseParam> _furnaceWorkParamRepository;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    public ProjectPeriodService(IRepository<FurnaceBaseParam> furnaceWorkParamRepository, 
-        IReferenceCoefficientsService referenceCoefficientsService, 
-        IHttpContextAccessor httpContextAccessor,
+
+    public ProjectPeriodService(IRepository<FurnaceBaseParam> furnaceWorkParamRepository,
+        IReferenceCoefficientsService referenceCoefficientsService,
         ICalculateService calculateService,
         IFurnaceService furnaceService)
     {
         _furnaceWorkParamRepository = furnaceWorkParamRepository;
         _referenceService = referenceCoefficientsService;
-        _httpContextAccessor = httpContextAccessor;
         _calculateService = calculateService;
         _furnaceService = furnaceService;
     }
-    
-    private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
-    
+
     public async Task<UnionResultViewModel> ProcessProjectPeriod(FurnaceProjectParam projectPeriodFurnaceData, Guid inputDataId)
     {
         FurnaceBaseParam basePeriodParam = _furnaceWorkParamRepository.GetSingle(p => p.Id == inputDataId);
 
         if (basePeriodParam == null)
             throw new NoContentException($"В базе данных нет сохраненных вариантов исходных данных с идентификатором {inputDataId}");
-        
+
         FurnaceBaseParam basePeriodParamClear = _furnaceWorkParamRepository.GetSingle(p => p.Id == inputDataId);
-        
-        Reference reference = await _referenceService.GetCoefficientsReferenceByUserIdAsync(_user.GetUserId());
+
+        Reference reference = _referenceService.GetCoefficientsReference();
 
         if (reference == null)
             throw new BusinessLogicException("Не удалось получить корректировочные коэффициенты");
-        
+
         ProjectDataViewModel projectChangedInputData = _calculateService.CalculateProjectThermalRegime(basePeriodParam, projectPeriodFurnaceData, reference);
-        
+
         basePeriodParam.BlastTemperature = projectChangedInputData.ProjectInputData.BlastTemperature;
         basePeriodParam.BlastHumidity = projectChangedInputData.ProjectInputData.BlastHumidity;
         basePeriodParam.OxygenContentInBlast = projectChangedInputData.ProjectInputData.OxygenContentInBlast;
@@ -60,19 +56,19 @@ public class ProjectPeriodService : IProjectPeriodService
 
         basePeriodParam.SpecificConsumptionOfCoke = projectChangedInputData.ChangedInputData.SpecificConsumptionOfCoke;
         basePeriodParam.DailyСapacityOfFurnace = projectChangedInputData.ChangedInputData.DailyСapacityOfFurnace;
-        
+
         await UpdateInputDataByFurnace(basePeriodParamClear);
         Result baseResultData = _calculateService.СalculateThermalRegime(basePeriodParamClear);
 
         await UpdateInputDataByFurnace(basePeriodParam);
         Result projectResultData = _calculateService.СalculateThermalRegime(basePeriodParam);
-        
+
         var baseResult = new ResultViewModel { Input = basePeriodParamClear, Result = baseResultData };
         var projectResult = new ResultViewModel { Input = basePeriodParam, Result = projectResultData };
 
         return new UnionResultViewModel { BaseResult = baseResult, ComparativeResult = projectResult };
     }
-    
+
     private async Task UpdateInputDataByFurnace(FurnaceBaseParam furnaceBase)
     {
         Furnace currentFurnace = await _furnaceService.GetSingleFurnaceAsync(furnaceBase.FurnaceId);

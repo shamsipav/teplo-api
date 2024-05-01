@@ -13,7 +13,7 @@ namespace TeploAPI.Controllers
     [CustomExceptionFilter]
     public class BaseController : ControllerBase
     {
-        private IBasePeriodService _basePeriodService;
+        private readonly IBasePeriodService _basePeriodService;
 
         public BaseController(IBasePeriodService basePeriodService)
         {

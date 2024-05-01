@@ -4,6 +4,14 @@ namespace TeploAPI.Interfaces
 {
     public interface IReferenceCoefficientsService
     {
-        Task<Reference?> GetCoefficientsReferenceByUserIdAsync(Guid uid);
+        /// <summary>
+        /// Получение значений справочника корректировочных коэффициентов для текущего пользователя
+        /// </summary>
+        Reference GetCoefficientsReference();
+
+        /// <summary>
+        /// Обновление значений справочника корректировочных коэффициентов для текущего пользователя
+        /// </summary>
+        Task<Reference> UpdateCoefficientsReference(Reference reference);
     }
 }
