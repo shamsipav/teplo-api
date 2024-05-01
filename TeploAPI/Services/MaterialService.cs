@@ -1,4 +1,6 @@
 ﻿using System.Security.Claims;
+using FluentValidation;
+using FluentValidation.Results;
 using TeploAPI.Exceptions;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
@@ -10,11 +12,13 @@ namespace TeploAPI.Services
     {
         private readonly IRepository<Material> _materialRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IValidator<Material> _validator;
 
-        public MaterialService(IRepository<Material> materialRepository, IHttpContextAccessor httpContextAccessor)
+        public MaterialService(IRepository<Material> materialRepository, IHttpContextAccessor httpContextAccessor, IValidator<Material> validator)
         {
             _materialRepository = materialRepository;
             _httpContextAccessor = httpContextAccessor;
+            _validator = validator;
         }
 
         private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
@@ -28,6 +32,11 @@ namespace TeploAPI.Services
 
         public async Task<Material> CreateMaterialAsync(Material material)
         {
+            ValidationResult validationResult = await _validator.ValidateAsync(material);
+
+            if (!validationResult.IsValid)
+                throw new BadRequestException(validationResult.Errors[0].ErrorMessage);
+            
             material.UserId = _user.GetUserId();
             material.BaseOne = material.CaO / material.SiO2;
 
@@ -38,6 +47,11 @@ namespace TeploAPI.Services
 
         public async Task<Material> UpdateMaterialAsync(Material material)
         {
+            ValidationResult validationResult = await _validator.ValidateAsync(material);
+
+            if (!validationResult.IsValid)
+                throw new BadRequestException(validationResult.Errors[0].ErrorMessage);
+            
             Material existMaterial = await _materialRepository.GetByIdAsync(material.Id);
 
             if (existMaterial == null)

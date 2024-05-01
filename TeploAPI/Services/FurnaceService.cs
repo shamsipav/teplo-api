@@ -1,4 +1,6 @@
 ﻿using System.Security.Claims;
+using FluentValidation;
+using FluentValidation.Results;
 using TeploAPI.Exceptions;
 using TeploAPI.Interfaces;
 using TeploAPI.Models.Furnace;
@@ -10,11 +12,13 @@ namespace TeploAPI.Services
     {
         private readonly IRepository<Furnace> _furnaceRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IValidator<Furnace> _validator;
 
-        public FurnaceService(IRepository<Furnace> furnaceRepository, IHttpContextAccessor httpContextAccessor)
+        public FurnaceService(IRepository<Furnace> furnaceRepository, IHttpContextAccessor httpContextAccessor, IValidator<Furnace> validator)
         {
             _furnaceRepository = furnaceRepository;
             _httpContextAccessor = httpContextAccessor;
+            _validator = validator;
         }
 
         private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
@@ -27,16 +31,25 @@ namespace TeploAPI.Services
 
         public async Task<Furnace> CreateFurnaceAsync(Furnace furnace)
         {
+            ValidationResult validationResult = await _validator.ValidateAsync(furnace);
+
+            if (!validationResult.IsValid)
+                throw new BadRequestException(validationResult.Errors[0].ErrorMessage);
+            
             furnace.UserId = _user.GetUserId();
 
             await _furnaceRepository.AddAsync(furnace);
-            await _furnaceRepository.SaveChangesAsync();
 
             return furnace;
         }
 
         public async Task<Furnace> UpdateFurnaceAsync(Furnace furnace)
         {
+            ValidationResult validationResult = await _validator.ValidateAsync(furnace);
+
+            if (!validationResult.IsValid)
+                throw new BadRequestException(validationResult.Errors[0].ErrorMessage);
+            
             Furnace existFurnace = await _furnaceRepository.GetByIdAsync(furnace.Id);
 
             if (existFurnace == null)
@@ -55,8 +68,7 @@ namespace TeploAPI.Services
             existFurnace.HeightOfShaft = furnace.HeightOfShaft;
             existFurnace.HeightOfColoshnik = furnace.HeightOfColoshnik;
 
-            _furnaceRepository.UpdateAsync(furnace);
-            await _furnaceRepository.SaveChangesAsync();
+            await _furnaceRepository.UpdateAsync(furnace);
 
             return furnace;
         }
@@ -74,7 +86,6 @@ namespace TeploAPI.Services
         public async Task<Furnace> RemoveFurnaceAsync(Guid id)
         {
             Furnace deletedFurnace = await _furnaceRepository.DeleteAsync(id);
-            await _furnaceRepository.SaveChangesAsync();
 
             return deletedFurnace;
         }

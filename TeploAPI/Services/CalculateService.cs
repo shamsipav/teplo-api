@@ -5,6 +5,7 @@ using TeploAPI.ViewModels;
 
 namespace TeploAPI.Services
 {
+    // TODO: Перепроверить расчеты
     /// <summary>
     /// Сервис для проведения расчетов
     /// </summary>
@@ -91,7 +92,7 @@ namespace TeploAPI.Services
             double changeFurnanceCapacity = 0;
 
             double blastTemperatureDifference = (project.BlastTemperature - input.BlastTemperature) / 10;
-            // TODO: Сделать на форме ограничения
+
             if (input.BlastTemperature >= 800 && project.BlastTemperature <= 900)
             {
                 changeCokeConsumption += (cokeConsumption * reference.CokeCunsumptionReference.TemperatureIncreaseInRangeOf800to900 * blastTemperatureDifference / 100);
@@ -146,7 +147,7 @@ namespace TeploAPI.Services
             changeFurnanceCapacity += (furnanceCapacity * reference.FurnaceCapacityReference.ReductionMassFractionOfSeraInChugun * chugun_Sdifference / 100);
 
             double ashContentDifference = project.AshContentInCoke - input.AshContentInCoke;
-            // TODO: Сделать на форме ограничения
+
             if (input.AshContentInCoke >= 11 && project.AshContentInCoke <= 12)
             {
                 changeCokeConsumption += (cokeConsumption * reference.CokeCunsumptionReference.ReductionMassFractionAshInCokeInRangeOf11to12Percent * ashContentDifference / 100);

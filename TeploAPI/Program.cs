@@ -104,7 +104,7 @@ builder.Services.AddScoped<ICalculateService, CalculateService>();
 
 // Валидаторы
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
-builder.Services.AddScoped<IValidator<FurnaceBaseParam>, FurnaceValidator>();
+builder.Services.AddScoped<IValidator<Furnace>, FurnaceValidator>();
 builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();
 
 var app = builder.Build();
