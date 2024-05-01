@@ -7,7 +7,7 @@ namespace TeploAPI.Interfaces
         /// <summary>
         /// Получить данные по всем печам в справочнике (для текущего пользователя)
         /// </summary>
-        Task<List<Furnace>> GetAll();
+        Task<List<Furnace>> GetAllAsync();
 
         /// <summary>
         /// Добавить данные печи в справочник (с привязкой к текущему пользователю)

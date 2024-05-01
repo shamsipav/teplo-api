@@ -26,7 +26,7 @@ namespace TeploAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync(FurnaceBaseParam furnaceBase, bool save)
         {
-            ResultViewModel result = await _basePeriodService.ProcessBasePeriod(furnaceBase, save);
+            ResultViewModel result = await _basePeriodService.ProcessBasePeriodAsync(furnaceBase, save);
 
             return Ok(new Response { IsSuccess = true, Result = result });
         }
@@ -40,7 +40,7 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> ComparisonAsync(Guid basePeriodId, Guid comparativePeriodId)
         {
-            UnionResultViewModel result = await _basePeriodService.ProcessComparativePeriod(basePeriodId, comparativePeriodId);
+            UnionResultViewModel result = await _basePeriodService.ProcessComparativePeriodAsync(basePeriodId, comparativePeriodId);
 
             return Ok(new Response { IsSuccess = true, Result = result });
         }

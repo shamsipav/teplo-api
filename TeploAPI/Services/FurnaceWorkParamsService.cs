@@ -59,7 +59,7 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
         return existDaily;
     }
 
-    public async Task<List<FurnaceBaseParam>> GetAll(bool isDaily = false)
+    public async Task<List<FurnaceBaseParam>> GetAllAsync(bool isDaily = false)
     {
         Guid userId = _user.GetUserId();
         return _furnaceWorkParamsRepository.Get(p => p.UserId == userId && p.Day != DateTime.MinValue).ToList();

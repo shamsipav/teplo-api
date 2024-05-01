@@ -25,7 +25,7 @@ public class BasePeriodService : IBasePeriodService
         _validator = validator;
     }
 
-    public async Task<ResultViewModel> ProcessBasePeriod(FurnaceBaseParam furnaceBase, bool saveData)
+    public async Task<ResultViewModel> ProcessBasePeriodAsync(FurnaceBaseParam furnaceBase, bool saveData)
     {
         ValidationResult validationResult = await _validator.ValidateAsync(furnaceBase);
 
@@ -55,7 +55,7 @@ public class BasePeriodService : IBasePeriodService
         return new ResultViewModel { Input = furnaceBase, Result = calculateResult };
     }
 
-    public async Task<UnionResultViewModel> ProcessComparativePeriod(Guid basePeriodId, Guid comparativePeriodId)
+    public async Task<UnionResultViewModel> ProcessComparativePeriodAsync(Guid basePeriodId, Guid comparativePeriodId)
     {
         if (basePeriodId == comparativePeriodId)
             throw new BadRequestException("Необходимо указать разные варианты данных или посуточной информации");

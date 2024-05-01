@@ -17,7 +17,7 @@ namespace TeploAPI.Services
         
         private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
 
-        public async Task<List<Furnace>> GetAll()
+        public async Task<List<Furnace>> GetAllAsync()
         {
             Guid userId = _user.GetUserId();
             return _furnaceRepository.Get(f => f.UserId == userId).ToList();

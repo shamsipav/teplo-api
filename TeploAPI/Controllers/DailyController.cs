@@ -26,7 +26,7 @@ namespace TeploAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-            List<FurnaceBaseParam> dailyInfoList = await _furnaceWorkParamsService.GetAll(true);
+            List<FurnaceBaseParam> dailyInfoList = await _furnaceWorkParamsService.GetAllAsync(true);
 
             return Ok(new Response { IsSuccess = true, Result = dailyInfoList });
         }
