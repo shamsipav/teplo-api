@@ -27,6 +27,9 @@ public class CustomExceptionFilterAttribute: Attribute, IExceptionFilter
             case NotFoundException _:
                 statusCode = 404;
                 break;
+            case NoContentException _:
+                statusCode = 204;
+                break;
             case BadRequestException _:
                 statusCode = 400;
                 break;
