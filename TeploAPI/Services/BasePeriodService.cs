@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System.Security.Claims;
+using FluentValidation;
 using FluentValidation.Results;
 using Serilog;
 using TeploAPI.Exceptions;
@@ -14,16 +15,20 @@ public class BasePeriodService : IBasePeriodService
     private readonly IFurnaceWorkParamsService _furnaceWorkParamsService;
     private readonly ICalculateService _calculateService;
     private readonly IFurnaceService _furnaceService;
-    private IValidator<FurnaceBaseParam> _validator;
+    private readonly IValidator<FurnaceBaseParam> _validator;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public BasePeriodService(IFurnaceWorkParamsService furnaceWorkParamsService, ICalculateService calculateService,
-        IFurnaceService furnaceService, IValidator<FurnaceBaseParam> validator)
+        IFurnaceService furnaceService, IValidator<FurnaceBaseParam> validator, IHttpContextAccessor httpContextAccessor)
     {
         _furnaceWorkParamsService = furnaceWorkParamsService;
         _calculateService = calculateService;
         _furnaceService = furnaceService;
         _validator = validator;
+        _httpContextAccessor = httpContextAccessor;
     }
+    
+    private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
 
     public async Task<ResultViewModel> ProcessBasePeriodAsync(FurnaceBaseParam furnaceBase, bool saveData)
     {
@@ -47,9 +52,9 @@ public class BasePeriodService : IBasePeriodService
             furnaceBase = await _furnaceWorkParamsService.CreateOrUpdateAsync(furnaceBase);
         }
 
-        // TODO: Проверить, авторизован ли пользователь перед этим действием
         // TODO: Вынести в отдельный класс (?)
-        await UpdateInputDataByFurnace(furnaceBase);
+        if (_user.Identity.IsAuthenticated)
+            await UpdateInputDataByFurnace(furnaceBase);
 
         Result calculateResult = _calculateService.СalculateThermalRegime(furnaceBase);
 

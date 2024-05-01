@@ -10,12 +10,13 @@ namespace TeploAPI.Services
     {
         private readonly IRepository<Furnace> _furnaceRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+
         public FurnaceService(IRepository<Furnace> furnaceRepository, IHttpContextAccessor httpContextAccessor)
         {
             _furnaceRepository = furnaceRepository;
             _httpContextAccessor = httpContextAccessor;
         }
-        
+
         private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
 
         public List<Furnace> GetAll()
@@ -69,7 +70,7 @@ namespace TeploAPI.Services
 
             return furnace;
         }
-        
+
         public async Task<Furnace> RemoveFurnaceAsync(Guid id)
         {
             Furnace deletedFurnace = await _furnaceRepository.DeleteAsync(id);

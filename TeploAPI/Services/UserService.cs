@@ -51,6 +51,7 @@ public class UserService : IUserService
         user.Email = user.Email.ToLower();
 
         string hashPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+
         user.Password = hashPassword;
 
         user.LastLoginIp = _httpContextAccessor.HttpContext.Request.Host.ToString();
@@ -58,10 +59,10 @@ public class UserService : IUserService
         user = await _userRepository.AddAsync(user);
 
         // TODO: Возможно, стоит разнести логику ниже по разным сервисам
-        var cokeCoefficients = CokeCunsumptionReference.GetDefaultData();
-        var furnaceCoefficients = FurnaceCapacityReference.GetDefaultData();
+        CokeCunsumptionReference cokeCoefficients = CokeCunsumptionReference.GetDefaultData();
+        FurnaceCapacityReference furnaceCoefficients = FurnaceCapacityReference.GetDefaultData();
 
-        var defaultFurnaceParam = FurnaceBaseParam.GetDefaultData();
+        FurnaceBaseParam defaultFurnaceParam = FurnaceBaseParam.GetDefaultData();
         var defaultFurnace = new Furnace
         {
             NumberOfFurnace = defaultFurnaceParam.NumberOfFurnace,

@@ -31,23 +31,12 @@ namespace TeploAPI.Controllers
         {
             Guid uid = User.GetUserId();
 
-            var variants = new List<FurnaceBaseParam>();
-            try
-            {
-                // Имеем в виду, что посуточная информация и варианты исходных данных - одна сущность, отличается только наличием/отсутствием значения в Day
-                // По-умолчанию в DateTime устанавливается DateTime.MinValue
-                variants = await _context.FurnacesWorkParams
-                                         .AsNoTracking()
-                                         .Include(i => i.MaterialsWorkParamsList)
-                                         .Where(v => v.UserId.Equals(uid) && v.Day == DateTime.MinValue)
-                                         .OrderBy(v => v.SaveDate)
-                                         .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"HTTP POST api/variant GetAsync: Ошибка получения сохраненных вариантов исходных данных: {ex}");
-                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить сохраненные варианты исходных данных" });
-            }
+            List<FurnaceBaseParam> variants = await _context.FurnacesWorkParams
+                                                            .AsNoTracking()
+                                                            .Include(i => i.MaterialsWorkParamsList)
+                                                            .Where(v => v.UserId.Equals(uid) && v.Day == DateTime.MinValue)
+                                                            .OrderBy(v => v.SaveDate)
+                                                            .ToListAsync();
 
             return Ok(new Response { IsSuccess = true, Result = variants });
         }
@@ -59,17 +48,7 @@ namespace TeploAPI.Controllers
         [HttpGet("default")]
         public IActionResult GetDefault()
         {
-            var variant = new FurnaceBaseParam();
-
-            try
-            {
-                variant = FurnaceBaseParam.GetDefaultData();
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"HTTP POST api/variant GetDefault: Ошибка получения варианта исходных данных по умолчанию: {ex}");
-                return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить вариант исходных данных по умолчанию" });
-            }
+            FurnaceBaseParam variant = FurnaceBaseParam.GetDefaultData();
 
             return Ok(new Response { IsSuccess = true, Result = variant });
         }
@@ -84,44 +63,21 @@ namespace TeploAPI.Controllers
         [HttpDelete("{variantId}")]
         public async Task<IActionResult> DeleteAsync(Guid variantId)
         {
-            if (variantId != null)
-            {
-                var variant = new FurnaceBaseParam();
-
-                try
-                {
-                    // Имеем в виду, что посуточная информация и варианты исходных данных - одна сущность, отличается только наличием/отсутствием значения в Day
-                    // По-умолчанию в DateTime устанавливается DateTime.MinValue
-                    variant = await _context.FurnacesWorkParams
-                                            .Include(i => i.MaterialsWorkParamsList)
-                                            .FirstOrDefaultAsync(v => v.Id.Equals(variantId) && v.Day == DateTime.MinValue);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"HTTP DELETE api/variant DeleteAsync: Ошибка получения варианта исходных данных для удаления: {ex}");
-                    return StatusCode(500, new Response { ErrorMessage = $"Не удалось получить вариант исходных данных для удаления" });
-                }
-
-                if (variant != null)
-                {
-                    try
-                    {
-                        _context.FurnacesWorkParams.Remove(variant);
-                        await _context.SaveChangesAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"HTTP DELETE api/variant DeleteAsync: Ошибка удаления варианта исходных данных: {ex}");
-                        return StatusCode(500, new Response { ErrorMessage = $"Не удалось удалить вариант исходных данных с идентификатором id = '{variantId}'" });
-                    }
-
-                    return Ok(new Response { IsSuccess = true, Result = variant, SuccessMessage = $"Вариант исходных данных \"{variant.Name}\" удален" });
-                }
-
+            if (variantId == null) 
                 return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию об варианте расчета с идентификатором id = '{variantId}'" });
-            }
+            
+            FurnaceBaseParam variant = await _context.FurnacesWorkParams
+                .Include(i => i.MaterialsWorkParamsList)
+                .FirstOrDefaultAsync(v => v.Id.Equals(variantId) && v.Day == DateTime.MinValue);
 
-            return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию об варианте расчета с идентификатором id = '{variantId}'" });
+            if (variant == null) 
+                return NotFound(new Response { ErrorMessage = $"Не удалось найти информацию об варианте расчета с идентификатором id = '{variantId}'" });
+                
+            _context.FurnacesWorkParams.Remove(variant);
+            await _context.SaveChangesAsync();
+
+            return Ok(new Response { IsSuccess = true, Result = variant, SuccessMessage = $"Вариант исходных данных \"{variant.Name}\" удален" });
+
         }
     }
 }
