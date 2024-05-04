@@ -1,4 +1,6 @@
-﻿namespace TeploAPI.Interfaces;
+﻿using System.Linq.Expressions;
+
+namespace TeploAPI.Interfaces;
 
 public interface IRepository<TEntity> where TEntity : class
 {
@@ -41,4 +43,14 @@ public interface IRepository<TEntity> where TEntity : class
     /// Сохранение изменений
     /// </summary>
     Task SaveChangesAsync();
+
+    /// <summary>
+    /// Получить объекты с зависимостями
+    /// </summary>
+    IQueryable<TEntity> GetWithInclude(params Expression<Func<TEntity, object>>[] includeProperties);
+
+    /// <summary>
+    /// Получить объекты с зависимостями, соответствующие лямбда-выражению
+    /// </summary>
+    IEnumerable<TEntity> GetWithInclude(Func<TEntity, bool> predicate, params Expression<Func<TEntity, object>>[] includeProperties);
 }

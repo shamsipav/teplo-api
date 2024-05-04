@@ -1,8 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Linq.Expressions;
 using TeploAPI.Interfaces;
 
 namespace TeploAPI.Repositories;
 
+// TODO: Чем чаще использую этот Generic Repository в этом проекте,
+// тем чаще задаю себе вопрос: "А нужен ли он здесь?"
 public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : class
 {
     private readonly TeploDBContext _dbContext;
@@ -61,6 +65,23 @@ public class MainRepository<TEntity> : IRepository<TEntity> where TEntity : clas
         }
 
         return entity;
+    }
+
+    public IQueryable<TEntity> GetWithInclude(params Expression<Func<TEntity, object>>[] includeProperties)
+    {
+        return Include(includeProperties);
+    }
+
+    public IEnumerable<TEntity> GetWithInclude(Func<TEntity, bool> predicate, params Expression<Func<TEntity, object>>[] includeProperties)
+    {
+        var query = Include(includeProperties);
+        return query.Where(predicate).AsEnumerable();
+    }
+
+    private IQueryable<TEntity> Include(params Expression<Func<TEntity, object>>[] includeProperties)
+    {
+        IQueryable<TEntity> query = _dbSet.AsNoTracking();
+        return includeProperties.Aggregate(query, (current, includeProperty) => current.Include(includeProperty));
     }
 
     public async Task SaveChangesAsync() => await _dbContext.SaveChangesAsync();

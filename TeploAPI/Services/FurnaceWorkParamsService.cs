@@ -1,19 +1,25 @@
-﻿using System.Security.Claims;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TeploAPI.Interfaces;
+using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
+using TeploAPI.Repositories;
 using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Services;
 
 public class FurnaceWorkParamsService : IFurnaceWorkParamsService
 {
+    private readonly TeploDBContext _dbContext;
     private readonly IRepository<FurnaceBaseParam> _furnaceWorkParamsRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public FurnaceWorkParamsService(IRepository<FurnaceBaseParam> furnaceWorkParamsRepository, IHttpContextAccessor httpContextAccessor)
+    public FurnaceWorkParamsService(IRepository<FurnaceBaseParam> furnaceWorkParamsRepository, 
+        IHttpContextAccessor httpContextAccessor, TeploDBContext dbContext)
     {
         _furnaceWorkParamsRepository = furnaceWorkParamsRepository;
         _httpContextAccessor = httpContextAccessor;
+        _dbContext = dbContext;
     }
 
     private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
@@ -67,70 +73,83 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
     /// <summary>
     /// Обновление прежде сохраненного варианта исходных данных
     /// </summary>
-    /// <param name="furnace"></param>
     /// <returns></returns>
-    public async Task<FurnaceBaseParam> UpdateAsync(FurnaceBaseParam furnace)
+    public async Task<FurnaceBaseParam> UpdateAsync(FurnaceBaseParam baseParam)
     {
-        FurnaceBaseParam existBaseParam = await _furnaceWorkParamsRepository.GetByIdAsync(furnace.Id);
+        FurnaceBaseParam existBaseParam = _furnaceWorkParamsRepository
+                                          .GetWithInclude(x => x.Id == baseParam.Id, p => p.MaterialsWorkParamsList)
+                                          .FirstOrDefault();
 
-        existBaseParam.NumberOfFurnace = furnace.NumberOfFurnace;
-        existBaseParam.UsefulVolumeOfFurnace = furnace.UsefulVolumeOfFurnace;
-        existBaseParam.UsefulHeightOfFurnace = furnace.UsefulHeightOfFurnace;
-        existBaseParam.DiameterOfColoshnik = furnace.DiameterOfColoshnik;
-        existBaseParam.DiameterOfRaspar = furnace.DiameterOfRaspar;
-        existBaseParam.DiameterOfHorn = furnace.DiameterOfHorn;
-        existBaseParam.HeightOfHorn = furnace.HeightOfHorn;
-        existBaseParam.HeightOfTuyeres = furnace.HeightOfTuyeres;
-        existBaseParam.HeightOfZaplechiks = furnace.HeightOfZaplechiks;
-        existBaseParam.HeightOfRaspar = furnace.HeightOfRaspar;
-        existBaseParam.HeightOfShaft = furnace.HeightOfShaft;
-        existBaseParam.HeightOfColoshnik = furnace.HeightOfColoshnik;
-        existBaseParam.EstablishedLevelOfEmbankment = furnace.EstablishedLevelOfEmbankment;
-        existBaseParam.NumberOfTuyeres = furnace.NumberOfTuyeres;
-        existBaseParam.DailyСapacityOfFurnace = furnace.DailyСapacityOfFurnace;
-        existBaseParam.SpecificConsumptionOfCoke = furnace.SpecificConsumptionOfCoke;
-        existBaseParam.SpecificConsumptionOfZRM = furnace.SpecificConsumptionOfZRM;
-        existBaseParam.ShareOfPelletsInCharge = furnace.ShareOfPelletsInCharge;
-        existBaseParam.BlastConsumption = furnace.BlastConsumption;
-        existBaseParam.BlastTemperature = furnace.BlastTemperature;
-        existBaseParam.BlastPressure = furnace.BlastPressure;
-        existBaseParam.BlastHumidity = furnace.BlastHumidity;
-        existBaseParam.OxygenContentInBlast = furnace.OxygenContentInBlast;
-        existBaseParam.NaturalGasConsumption = furnace.NaturalGasConsumption;
-        existBaseParam.ColoshGasTemperature = furnace.ColoshGasTemperature;
-        existBaseParam.ColoshGasPressure = furnace.ColoshGasPressure;
-        existBaseParam.ColoshGas_CO = furnace.ColoshGas_CO;
-        existBaseParam.ColoshGas_CO2 = furnace.ColoshGas_CO2;
-        existBaseParam.ColoshGas_H2 = furnace.ColoshGas_H2;
-        existBaseParam.Chugun_SI = furnace.Chugun_SI;
-        existBaseParam.Chugun_MN = furnace.Chugun_MN;
-        existBaseParam.Chugun_P = furnace.Chugun_P;
-        existBaseParam.Chugun_S = furnace.Chugun_S;
-        existBaseParam.Chugun_C = furnace.Chugun_C;
-        existBaseParam.AshContentInCoke = furnace.AshContentInCoke;
-        existBaseParam.VolatileContentInCoke = furnace.VolatileContentInCoke;
-        existBaseParam.SulfurContentInCoke = furnace.SulfurContentInCoke;
-        existBaseParam.SpecificSlagYield = furnace.SpecificSlagYield;
-        existBaseParam.HeatCapacityOfAgglomerate = furnace.HeatCapacityOfAgglomerate;
-        existBaseParam.HeatCapacityOfPellets = furnace.HeatCapacityOfPellets;
-        existBaseParam.HeatCapacityOfCoke = furnace.HeatCapacityOfCoke;
-        existBaseParam.AcceptedTemperatureOfBackupZone = furnace.AcceptedTemperatureOfBackupZone;
-        existBaseParam.ProportionOfHeatLossesOfLowerPart = furnace.ProportionOfHeatLossesOfLowerPart;
-        existBaseParam.AverageSizeOfPieceCharge = furnace.AverageSizeOfPieceCharge;
+        existBaseParam.NumberOfFurnace = baseParam.NumberOfFurnace;
+        existBaseParam.UsefulVolumeOfFurnace = baseParam.UsefulVolumeOfFurnace;
+        existBaseParam.UsefulHeightOfFurnace = baseParam.UsefulHeightOfFurnace;
+        existBaseParam.DiameterOfColoshnik = baseParam.DiameterOfColoshnik;
+        existBaseParam.DiameterOfRaspar = baseParam.DiameterOfRaspar;
+        existBaseParam.DiameterOfHorn = baseParam.DiameterOfHorn;
+        existBaseParam.HeightOfHorn = baseParam.HeightOfHorn;
+        existBaseParam.HeightOfTuyeres = baseParam.HeightOfTuyeres;
+        existBaseParam.HeightOfZaplechiks = baseParam.HeightOfZaplechiks;
+        existBaseParam.HeightOfRaspar = baseParam.HeightOfRaspar;
+        existBaseParam.HeightOfShaft = baseParam.HeightOfShaft;
+        existBaseParam.HeightOfColoshnik = baseParam.HeightOfColoshnik;
+        existBaseParam.EstablishedLevelOfEmbankment = baseParam.EstablishedLevelOfEmbankment;
+        existBaseParam.NumberOfTuyeres = baseParam.NumberOfTuyeres;
+        existBaseParam.DailyСapacityOfFurnace = baseParam.DailyСapacityOfFurnace;
+        existBaseParam.SpecificConsumptionOfCoke = baseParam.SpecificConsumptionOfCoke;
+        existBaseParam.SpecificConsumptionOfZRM = baseParam.SpecificConsumptionOfZRM;
+        existBaseParam.ShareOfPelletsInCharge = baseParam.ShareOfPelletsInCharge;
+        existBaseParam.BlastConsumption = baseParam.BlastConsumption;
+        existBaseParam.BlastTemperature = baseParam.BlastTemperature;
+        existBaseParam.BlastPressure = baseParam.BlastPressure;
+        existBaseParam.BlastHumidity = baseParam.BlastHumidity;
+        existBaseParam.OxygenContentInBlast = baseParam.OxygenContentInBlast;
+        existBaseParam.NaturalGasConsumption = baseParam.NaturalGasConsumption;
+        existBaseParam.ColoshGasTemperature = baseParam.ColoshGasTemperature;
+        existBaseParam.ColoshGasPressure = baseParam.ColoshGasPressure;
+        existBaseParam.ColoshGas_CO = baseParam.ColoshGas_CO;
+        existBaseParam.ColoshGas_CO2 = baseParam.ColoshGas_CO2;
+        existBaseParam.ColoshGas_H2 = baseParam.ColoshGas_H2;
+        existBaseParam.Chugun_SI = baseParam.Chugun_SI;
+        existBaseParam.Chugun_MN = baseParam.Chugun_MN;
+        existBaseParam.Chugun_P = baseParam.Chugun_P;
+        existBaseParam.Chugun_S = baseParam.Chugun_S;
+        existBaseParam.Chugun_C = baseParam.Chugun_C;
+        existBaseParam.AshContentInCoke = baseParam.AshContentInCoke;
+        existBaseParam.VolatileContentInCoke = baseParam.VolatileContentInCoke;
+        existBaseParam.SulfurContentInCoke = baseParam.SulfurContentInCoke;
+        existBaseParam.SpecificSlagYield = baseParam.SpecificSlagYield;
+        existBaseParam.HeatCapacityOfAgglomerate = baseParam.HeatCapacityOfAgglomerate;
+        existBaseParam.HeatCapacityOfPellets = baseParam.HeatCapacityOfPellets;
+        existBaseParam.HeatCapacityOfCoke = baseParam.HeatCapacityOfCoke;
+        existBaseParam.AcceptedTemperatureOfBackupZone = baseParam.AcceptedTemperatureOfBackupZone;
+        existBaseParam.ProportionOfHeatLossesOfLowerPart = baseParam.ProportionOfHeatLossesOfLowerPart;
+        existBaseParam.AverageSizeOfPieceCharge = baseParam.AverageSizeOfPieceCharge;
 
-        existBaseParam.HeatOfBurningOfNaturalGasOnFarms = furnace.HeatOfBurningOfNaturalGasOnFarms;
-        existBaseParam.HeatOfIncompleteBurningCarbonOfCoke = furnace.HeatOfIncompleteBurningCarbonOfCoke;
-        existBaseParam.TemperatureOfCokeThatCameToTuyeres = furnace.TemperatureOfCokeThatCameToTuyeres;
-        existBaseParam.Day = furnace.Day;
+        existBaseParam.HeatOfBurningOfNaturalGasOnFarms = baseParam.HeatOfBurningOfNaturalGasOnFarms;
+        existBaseParam.HeatOfIncompleteBurningCarbonOfCoke = baseParam.HeatOfIncompleteBurningCarbonOfCoke;
+        existBaseParam.TemperatureOfCokeThatCameToTuyeres = baseParam.TemperatureOfCokeThatCameToTuyeres;
+        existBaseParam.Day = baseParam.Day;
         existBaseParam.SaveDate = DateTime.Now;
 
         if (existBaseParam.MaterialsWorkParamsList != null && existBaseParam.MaterialsWorkParamsList.Any())
         {
             existBaseParam.MaterialsWorkParamsList.Clear();
-            existBaseParam.MaterialsWorkParamsList = furnace.MaterialsWorkParamsList;
+            existBaseParam.MaterialsWorkParamsList = baseParam.MaterialsWorkParamsList;
         }
 
-        await _furnaceWorkParamsRepository.SaveChangesAsync();
+        // Этот метод не обновит связанную таблицу MaterialsWorkParams
+        await _furnaceWorkParamsRepository.UpdateAsync(existBaseParam);
+
+        // TODO: Адский костыль, нужно реализовать в будущем корректное обновление
+        // связанных сущностей в Generic Repository
+        List<MaterialsWorkParams> materialsWorkParams = await _dbContext.MaterialsWorkParams.Where(x => x.FurnaceBaseParamId == existBaseParam.Id).ToListAsync();
+        _dbContext.MaterialsWorkParams.RemoveRange(materialsWorkParams);
+        foreach (MaterialsWorkParams materialWorkParam in baseParam.MaterialsWorkParamsList)
+        {
+            materialWorkParam.FurnaceBaseParamId = existBaseParam.Id;
+            _dbContext.MaterialsWorkParams.Add(materialWorkParam);
+        }
+        await _dbContext.SaveChangesAsync();
 
         return existBaseParam;
     }
@@ -138,7 +157,6 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
     public async Task<FurnaceBaseParam> RemoveAsync(Guid id)
     {
         FurnaceBaseParam deletedFurnaceParam = await _furnaceWorkParamsRepository.DeleteAsync(id);
-        await _furnaceWorkParamsRepository.SaveChangesAsync();
 
         return deletedFurnaceParam;
     }
