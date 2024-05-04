@@ -31,7 +31,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "TeploAPI",
         Version = "v1",
-        Description = "Documentation description",
+        Description = "Master dissertation. Web API documentation",
         Contact = new OpenApiContact()
         {
             Name = "Pavel Shamsimukhametov",
