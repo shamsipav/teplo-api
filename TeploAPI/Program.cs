@@ -107,6 +107,9 @@ builder.Services.AddScoped<IValidator<User>, UserValidator>();
 builder.Services.AddScoped<IValidator<Furnace>, FurnaceValidator>();
 builder.Services.AddScoped<IValidator<Material>, MaterialValidator>();
 
+// Lowercase routing -> /api/Auth... => /api/auth..
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
 var app = builder.Build();
 
 var origins = builder.Configuration.GetSection("AllowedCorsOrigins").Get<string[]>();
