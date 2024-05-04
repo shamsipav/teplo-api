@@ -31,7 +31,7 @@ public class ProjectPeriodService : IProjectPeriodService
         FurnaceBaseParam basePeriodParam = _furnaceWorkParamRepository.GetSingle(p => p.Id == inputDataId);
 
         if (basePeriodParam == null)
-            throw new NoContentException($"В базе данных нет сохраненных вариантов исходных данных с идентификатором {inputDataId}");
+            throw new BusinessLogicException($"В базе данных нет сохраненных вариантов исходных данных с идентификатором {inputDataId}");
 
         FurnaceBaseParam basePeriodParamClear = _furnaceWorkParamRepository.GetSingle(p => p.Id == inputDataId);
 

@@ -55,7 +55,7 @@ namespace TeploAPI.Services
             Furnace existFurnace = await _furnaceRepository.GetByIdAsync(furnace.Id);
 
             if (existFurnace == null)
-                throw new NoContentException($"Не удалось найти информацию о печи с идентификатором id = '{furnace.Id}'");
+                throw new BusinessLogicException($"Не удалось найти информацию о печи с идентификатором id = '{furnace.Id}'");
 
             existFurnace.NumberOfFurnace = furnace.NumberOfFurnace;
             existFurnace.UsefulVolumeOfFurnace = furnace.UsefulVolumeOfFurnace;
@@ -80,7 +80,7 @@ namespace TeploAPI.Services
             Furnace furnace = await _furnaceRepository.GetByIdAsync(id);
 
             if (furnace == null)
-                throw new NoContentException($"Не удалось найти печь с идентификатором {id}");
+                throw new BusinessLogicException($"Не удалось найти печь с идентификатором {id}");
 
             return furnace;
         }

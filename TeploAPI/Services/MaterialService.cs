@@ -55,7 +55,7 @@ namespace TeploAPI.Services
             Material existMaterial = await _materialRepository.GetByIdAsync(material.Id);
 
             if (existMaterial == null)
-                throw new NoContentException($"Не удалось найти информацию о материале с идентификатором id = '{material.Id}'");
+                throw new BusinessLogicException($"Не удалось найти информацию о материале с идентификатором id = '{material.Id}'");
 
             existMaterial.Name = material.Name;
             existMaterial.Moisture = material.Moisture;
@@ -86,7 +86,7 @@ namespace TeploAPI.Services
             Material material = await _materialRepository.GetByIdAsync(id);
 
             if (material == null)
-                throw new NoContentException($"Не удалось найти материал с идентификатором '{id}'");
+                throw new BusinessLogicException($"Не удалось найти материал с идентификатором '{id}'");
 
             return material;
         }

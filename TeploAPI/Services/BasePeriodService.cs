@@ -41,8 +41,7 @@ public class BasePeriodService : IBasePeriodService
         // Сохранение нового варианта исходных данных
         if (saveData && furnaceBase.SaveDate == DateTime.MinValue && furnaceBase.Day == DateTime.MinValue)
         {
-            // TODO: Перепроверить работоспособность
-            furnaceBase = await _furnaceWorkParamsService.CreateOrUpdateAsync(furnaceBase);
+            furnaceBase = await _furnaceWorkParamsService.AddAsync(furnaceBase);
         }
 
         // TODO: Вынести в отдельный класс (?)
@@ -72,7 +71,7 @@ public class BasePeriodService : IBasePeriodService
             calculateBaseResult = _calculateService.СalculateThermalRegime(basePeriodFurnace);
         }
         else
-            throw new NoContentException("Вариант исходных данных для базового периода не был найден");
+            throw new BusinessLogicException("Вариант исходных данных для базового периода не был найден");
 
         ResultViewModel baseResult = new ResultViewModel { Input = basePeriodFurnace, Result = calculateBaseResult };
 
@@ -85,7 +84,7 @@ public class BasePeriodService : IBasePeriodService
             calculateComparativeResult = _calculateService.СalculateThermalRegime(comparativePeriodFurnance);
         }
         else
-            throw new NoContentException("Вариант исходных данных для сравнительного периода не был найден");
+            throw new BusinessLogicException("Вариант исходных данных для сравнительного периода не был найден");
 
         ResultViewModel comparativeResult = new ResultViewModel { Input = comparativePeriodFurnance, Result = calculateComparativeResult };
 

@@ -103,7 +103,7 @@ public class UserService : IUserService
 
         User existUser = _userRepository.GetSingle(u => u.Email == email.ToLower());
         if (existUser is null)
-            throw new NoContentException("Пользователь с таким Email не найден");
+            throw new BusinessLogicException("Пользователь с таким Email не найден");
 
         bool passwordComparison = BCrypt.Net.BCrypt.Verify(password, existUser.Password);
         if (!passwordComparison)
@@ -147,7 +147,7 @@ public class UserService : IUserService
         {
             existUser = _userRepository.GetSingle(u => u.Email == email.ToLower());
             if (existUser is null)
-                throw new NoContentException("Пользователь с таким Email не найден");
+                throw new BusinessLogicException("Пользователь с таким Email не найден");
         }
         else
             throw new BadRequestException("Некорректный токен");

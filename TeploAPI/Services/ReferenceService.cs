@@ -32,11 +32,11 @@ namespace TeploAPI.Services
 
             CokeCunsumptionReference cokeCoefficients = _cokeConsumptionReferenceRepository.GetSingle(x => x.UserId == userId);
             if (cokeCoefficients == null)
-                throw new NoContentException("Не удалось получить значения справочника корректировочных коэффициентов, влияющих на расход кокса");
+                throw new BusinessLogicException("Не удалось получить значения справочника корректировочных коэффициентов, влияющих на расход кокса");
 
             FurnaceCapacityReference furnanceCapacityCoefficients = _furnaceCapacityReferenceRepository.GetSingle(x => x.UserId == userId);
             if (furnanceCapacityCoefficients == null)
-                throw new NoContentException("Не удалось получить значения справочника корректировочных коэффициентов, влияющих на производительность печи");
+                throw new BusinessLogicException("Не удалось получить значения справочника корректировочных коэффициентов, влияющих на производительность печи");
 
             return new Reference { CokeCunsumptionReference = cokeCoefficients, FurnaceCapacityReference = furnanceCapacityCoefficients };
         }

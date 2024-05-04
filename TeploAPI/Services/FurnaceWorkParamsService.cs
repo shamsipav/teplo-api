@@ -124,8 +124,11 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
         existBaseParam.Day = furnace.Day;
         existBaseParam.SaveDate = DateTime.Now;
 
-        existBaseParam.MaterialsWorkParamsList.Clear();
-        existBaseParam.MaterialsWorkParamsList = furnace.MaterialsWorkParamsList;
+        if (existBaseParam.MaterialsWorkParamsList != null && existBaseParam.MaterialsWorkParamsList.Any())
+        {
+            existBaseParam.MaterialsWorkParamsList.Clear();
+            existBaseParam.MaterialsWorkParamsList = furnace.MaterialsWorkParamsList;
+        }
 
         await _furnaceWorkParamsRepository.SaveChangesAsync();
 
