@@ -4,11 +4,11 @@ namespace TeploAPI.Interfaces;
 
 public interface IFurnaceWorkParamsService
 {
-    Task<List<FurnaceBaseParam>> GetAllAsync( bool isDaily);
+    List<FurnaceBaseParam> GetAll(bool isDaily);
 
     Task<FurnaceBaseParam> GetSingleAsync(Guid id);
 
-    Task<FurnaceBaseParam> GetSingleAsync(Guid id, DateTime day);
+    FurnaceBaseParam GetSingle(Guid id, DateTime day);
 
     Task<FurnaceBaseParam> AddAsync(FurnaceBaseParam furnaceBaseParam);
 

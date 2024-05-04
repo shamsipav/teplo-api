@@ -1,11 +1,6 @@
 ﻿using System.Security.Claims;
-using FluentValidation;
-using FluentValidation.Results;
-using Microsoft.EntityFrameworkCore;
-using TeploAPI.Exceptions;
 using TeploAPI.Interfaces;
 using TeploAPI.Models.Furnace;
-using TeploAPI.Repositories.Interfaces;
 using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Services;
@@ -14,15 +9,13 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
 {
     private readonly IRepository<FurnaceBaseParam> _furnaceWorkParamsRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private IValidator<FurnaceBaseParam> _validator;
 
-    public FurnaceWorkParamsService(IRepository<FurnaceBaseParam> furnaceWorkParamsRepository, IHttpContextAccessor httpContextAccessor, IValidator<FurnaceBaseParam> validator)
+    public FurnaceWorkParamsService(IRepository<FurnaceBaseParam> furnaceWorkParamsRepository, IHttpContextAccessor httpContextAccessor)
     {
         _furnaceWorkParamsRepository = furnaceWorkParamsRepository;
         _httpContextAccessor = httpContextAccessor;
-        _validator = validator;
     }
-    
+
     private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
 
     public async Task<FurnaceBaseParam> AddAsync(FurnaceBaseParam furnaceBaseParam)
@@ -38,13 +31,8 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
 
     public async Task<FurnaceBaseParam> CreateOrUpdateAsync(FurnaceBaseParam dailyInfo)
     {
-        ValidationResult validationResult = await _validator.ValidateAsync(dailyInfo);
-            
-        if (!validationResult.IsValid)
-            throw new BadRequestException( validationResult.Errors[0].ErrorMessage);
-        
         // Если пришла дата, которая уже была для конкретной печи - обновляем суточную информацию
-        FurnaceBaseParam existDaily = await GetSingleAsync(dailyInfo.FurnaceId, dailyInfo.Day);
+        FurnaceBaseParam existDaily = GetSingle(dailyInfo.FurnaceId, dailyInfo.Day);
 
         if (existDaily != null)
         {
@@ -59,7 +47,7 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
         return existDaily;
     }
 
-    public async Task<List<FurnaceBaseParam>> GetAllAsync(bool isDaily = false)
+    public List<FurnaceBaseParam> GetAll(bool isDaily = false)
     {
         Guid userId = _user.GetUserId();
         return _furnaceWorkParamsRepository.Get(p => (isDaily ? p.Day != DateTime.MinValue : p.Day == DateTime.MinValue) && p.UserId == userId).ToList();
@@ -70,7 +58,7 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
         return await _furnaceWorkParamsRepository.GetByIdAsync(id);
     }
 
-    public async Task<FurnaceBaseParam> GetSingleAsync(Guid id, DateTime day)
+    public FurnaceBaseParam GetSingle(Guid id, DateTime day)
     {
         return _furnaceWorkParamsRepository.GetSingle(p => p.Id == id && p.Day == day);
     }
@@ -83,7 +71,7 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
     public async Task<FurnaceBaseParam> UpdateAsync(FurnaceBaseParam furnace)
     {
         FurnaceBaseParam existBaseParam = await _furnaceWorkParamsRepository.GetByIdAsync(furnace.Id);
-        
+
         existBaseParam.NumberOfFurnace = furnace.NumberOfFurnace;
         existBaseParam.UsefulVolumeOfFurnace = furnace.UsefulVolumeOfFurnace;
         existBaseParam.UsefulHeightOfFurnace = furnace.UsefulHeightOfFurnace;

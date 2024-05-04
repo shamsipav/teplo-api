@@ -15,16 +15,14 @@ public class BasePeriodService : IBasePeriodService
     private readonly IFurnaceWorkParamsService _furnaceWorkParamsService;
     private readonly ICalculateService _calculateService;
     private readonly IFurnaceService _furnaceService;
-    private readonly IValidator<FurnaceBaseParam> _validator;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public BasePeriodService(IFurnaceWorkParamsService furnaceWorkParamsService, ICalculateService calculateService,
-        IFurnaceService furnaceService, IValidator<FurnaceBaseParam> validator, IHttpContextAccessor httpContextAccessor)
+        IFurnaceService furnaceService, IHttpContextAccessor httpContextAccessor)
     {
         _furnaceWorkParamsService = furnaceWorkParamsService;
         _calculateService = calculateService;
         _furnaceService = furnaceService;
-        _validator = validator;
         _httpContextAccessor = httpContextAccessor;
     }
     
@@ -32,11 +30,6 @@ public class BasePeriodService : IBasePeriodService
 
     public async Task<ResultViewModel> ProcessBasePeriodAsync(FurnaceBaseParam furnaceBase, bool saveData)
     {
-        ValidationResult validationResult = await _validator.ValidateAsync(furnaceBase);
-
-        if (!validationResult.IsValid)
-            throw new BadRequestException(validationResult.Errors[0].ErrorMessage);
-
         // Обновление существующего варианта исходных данных
         // Кейс отрабатывает при услови, когда передается вариант исходных данных, уже сохраненный до этого в БД,
         // Но с флагом save == true
