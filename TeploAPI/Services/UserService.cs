@@ -131,7 +131,7 @@ public class UserService : IUserService
         return encodedJwt;
     }
 
-    public UserDTO GetInformationAsync()
+    public UserDTO GetInformation()
     {
         IHeaderDictionary headers = _httpContextAccessor.HttpContext.Request.Headers;
 

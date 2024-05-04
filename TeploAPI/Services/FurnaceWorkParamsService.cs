@@ -22,6 +22,7 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
     {
         furnaceBaseParam.Id = Guid.NewGuid();
         furnaceBaseParam.UserId = _user.GetUserId();
+        furnaceBaseParam.SaveDate = DateTime.Now; // TODO: ToUtcNow();
 
         await _furnaceWorkParamsRepository.AddAsync(furnaceBaseParam);
         await _furnaceWorkParamsRepository.SaveChangesAsync();
@@ -37,14 +38,14 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
         if (existDaily != null)
         {
             dailyInfo.Id = existDaily.Id;
-            existDaily = await UpdateAsync(dailyInfo);
+            await UpdateAsync(dailyInfo);
         }
         else
         {
             await AddAsync(dailyInfo);
         }
 
-        return existDaily;
+        return dailyInfo;
     }
 
     public List<FurnaceBaseParam> GetAll(bool isDaily = false)

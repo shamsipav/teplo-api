@@ -19,5 +19,5 @@ public interface IUserService
     /// <summary>
     /// Получение информации о текущем пользователе
     /// </summary>
-    UserDTO GetInformationAsync();
+    UserDTO GetInformation();
 }

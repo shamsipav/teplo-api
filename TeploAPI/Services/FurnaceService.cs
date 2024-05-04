@@ -11,14 +11,16 @@ namespace TeploAPI.Services
     public class FurnaceService : IFurnaceService
     {
         private readonly IRepository<Furnace> _furnaceRepository;
+        private readonly IRepository<FurnaceBaseParam> _variantRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IValidator<Furnace> _validator;
 
-        public FurnaceService(IRepository<Furnace> furnaceRepository, IHttpContextAccessor httpContextAccessor, IValidator<Furnace> validator)
+        public FurnaceService(IRepository<Furnace> furnaceRepository, IHttpContextAccessor httpContextAccessor, IValidator<Furnace> validator, IRepository<FurnaceBaseParam> variantRepository)
         {
             _furnaceRepository = furnaceRepository;
             _httpContextAccessor = httpContextAccessor;
             _validator = validator;
+            _variantRepository = variantRepository;
         }
 
         private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
@@ -85,6 +87,11 @@ namespace TeploAPI.Services
 
         public async Task<Furnace> RemoveFurnaceAsync(Guid id)
         {
+            FurnaceBaseParam variantWithThisFurnace = _variantRepository.GetSingle(v => v.FurnaceId == id);
+
+            if (variantWithThisFurnace != null)
+                throw new BusinessLogicException($"Ссылка на данную печь содержится в варианте исходных данных '{variantWithThisFurnace.Name}'");
+
             Furnace deletedFurnace = await _furnaceRepository.DeleteAsync(id);
 
             return deletedFurnace;
