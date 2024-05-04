@@ -90,7 +90,7 @@ namespace TeploAPI.Services
             FurnaceBaseParam variantWithThisFurnace = _variantRepository.GetSingle(v => v.FurnaceId == id);
 
             if (variantWithThisFurnace != null)
-                throw new BusinessLogicException($"Ссылка на данную печь содержится в варианте исходных данных '{variantWithThisFurnace.Name}'");
+                throw new BusinessLogicException($"На данную печь ссылается вариант исходных данных или посуточная информация о работе ДП");
 
             Furnace deletedFurnace = await _furnaceRepository.DeleteAsync(id);
 
