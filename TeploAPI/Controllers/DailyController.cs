@@ -24,9 +24,9 @@ namespace TeploAPI.Controllers
         /// Получение данных посуточной информации за всё время
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        public IActionResult GetAsync()
         {
-            List<FurnaceBaseParam> dailyInfoList = await _furnaceWorkParamsService.GetAllAsync(true);
+            List<FurnaceBaseParam> dailyInfoList = _furnaceWorkParamsService.GetAll(true);
 
             return Ok(new Response { IsSuccess = true, Result = dailyInfoList });
         }
