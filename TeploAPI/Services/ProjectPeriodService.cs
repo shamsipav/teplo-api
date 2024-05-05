@@ -40,6 +40,8 @@ public class ProjectPeriodService : IProjectPeriodService
         if (reference == null)
             throw new BusinessLogicException("Не удалось получить корректировочные коэффициенты");
 
+        ValidateProjectPeriodData(projectPeriodFurnaceData, basePeriodParam);
+
         ProjectDataViewModel projectChangedInputData = _calculateService.CalculateProjectThermalRegime(basePeriodParam, projectPeriodFurnaceData, reference);
 
         basePeriodParam.BlastTemperature = projectChangedInputData.ProjectInputData.BlastTemperature;
@@ -88,5 +90,16 @@ public class ProjectPeriodService : IProjectPeriodService
             furnaceBase.HeightOfShaft = currentFurnace.HeightOfShaft;
             furnaceBase.HeightOfColoshnik = currentFurnace.HeightOfColoshnik;
         }
+    }
+
+    // TODO: Реализовать через FluentValidation
+    private void ValidateProjectPeriodData(FurnaceProjectParam projectPeriodData, FurnaceBaseParam basePeriodParam)
+    {
+        if (projectPeriodData.AshContentInCoke < 11 || projectPeriodData.AshContentInCoke > 12)
+            throw new BadRequestException("Содержание золы в коксе должно быть в пределах от 11 до 12%");
+
+        if (basePeriodParam.BlastHumidity != projectPeriodData.BlastHumidity)
+            if (basePeriodParam.BlastTemperature != projectPeriodData.BlastTemperature)
+                throw new BadRequestException("Изменение влажности дутья (г/м3) должно происходить без изменения температуры дутья (ºC)");
     }
 }
