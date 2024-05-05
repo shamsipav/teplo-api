@@ -52,11 +52,6 @@ namespace TeploAPI.Repositories
             return _context.Set<TEntity>().Where(predicate);
         }
 
-        public async Task<IQueryable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await Task.Run(() => _context.Set<TEntity>().Where(predicate));
-        }
-
         public IQueryable<TEntity> GetWithInclude(params Expression<Func<TEntity, object>>[] includeProperties)
         {
             return Include(includeProperties);
@@ -79,11 +74,6 @@ namespace TeploAPI.Repositories
             return _context.Set<TEntity>().ToList();
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync()
-        {
-            return await Task.Run(() => _context.Set<TEntity>());
-        }
-
         public int Count()
         {
             return _context.Set<TEntity>().Count();
@@ -102,7 +92,7 @@ namespace TeploAPI.Repositories
             return objModel;
         }
 
-        public async Task<TEntity> RemoveAsync(TEntity objModel)
+        public async Task<TEntity?> RemoveAsync(TEntity objModel)
         {
             _context.Set<TEntity>().Remove(objModel);
             await _context.SaveChangesAsync();
@@ -110,7 +100,7 @@ namespace TeploAPI.Repositories
             return objModel;
         }
 
-        public async Task<TEntity?> RemoveByIdAsync(Guid id)
+        public async Task<TEntity> RemoveByIdAsync(Guid id)
         {
             TEntity? entity = await GetByIdAsync(id);
             if (entity != null)

@@ -40,11 +40,6 @@ namespace TeploAPI.Interfaces
         IQueryable<T> Get(Expression<Func<T, bool>> predicate);
 
         /// <summary>
-        /// Получить список объектов, соответствующих лямбда-выражению (async)
-        /// </summary>
-        Task<IQueryable<T>> GetAsync(Expression<Func<T, bool>> predicate);
-
-        /// <summary>
         /// Получить все объекты с вложенными
         /// </summary>
         public IQueryable<T> GetWithInclude(params Expression<Func<T, object>>[] includeProperties);
@@ -58,11 +53,6 @@ namespace TeploAPI.Interfaces
         /// Получить все объекты
         /// </summary>
         IEnumerable<T> GetAll();
-
-        /// <summary>
-        /// Получить все объекты (async)
-        /// </summary>
-        Task<IEnumerable<T>> GetAllAsync();
 
         /// <summary>
         /// Количество объектов
