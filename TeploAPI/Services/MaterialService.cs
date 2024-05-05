@@ -108,7 +108,7 @@ namespace TeploAPI.Services
             if (existBaseParam != null && existBaseParam.Any())
                 throw new BusinessLogicException($"На данный материал ссылается вариант исходных данных или посуточная информация о работе ДП");
 
-            Material deletedMaterial = await _materialRepository.DeleteAsync(id);
+            Material deletedMaterial = await _materialRepository.RemoveByIdAsync(id);
 
             return deletedMaterial;
         }

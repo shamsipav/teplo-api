@@ -23,9 +23,9 @@ namespace TeploAPI.Controllers
         /// Получение значений для справочника корректировочных коэффициентов
         /// </summary>
         [HttpGet]
-        public IActionResult GetAsync()
+        public async Task<IActionResult> GetAsync()
         {
-            Reference reference = _referenceService.GetCoefficientsReference();
+            Reference reference = await _referenceService.GetCoefficientsReference();
 
             return Ok(new Response { IsSuccess = true, Result = reference });
         }

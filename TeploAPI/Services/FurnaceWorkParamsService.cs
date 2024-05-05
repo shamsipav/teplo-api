@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using TeploAPI.Exceptions;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
 using TeploAPI.Models.Furnace;
@@ -31,7 +32,6 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
         furnaceBaseParam.SaveDate = DateTime.Now; // TODO: ToUtcNow();
 
         await _furnaceWorkParamsRepository.AddAsync(furnaceBaseParam);
-        await _furnaceWorkParamsRepository.SaveChangesAsync();
 
         return furnaceBaseParam;
     }
@@ -40,7 +40,7 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
     {
         // Если пришла дата, которая уже была для конкретной печи - обновляем суточную информацию
         //FurnaceBaseParam existDaily = GetSingle(dailyInfo.FurnaceId, dailyInfo.Day);
-        FurnaceBaseParam existDaily = _furnaceWorkParamsRepository.GetSingle(x => x.Id == dailyInfo.Id);
+        FurnaceBaseParam existDaily = await _furnaceWorkParamsRepository.GetByIdAsync(dailyInfo.Id, false);
 
         if (existDaily != null)
         {
@@ -141,19 +141,18 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
 
         if (existBaseParam.MaterialsWorkParamsList != null && existBaseParam.MaterialsWorkParamsList.Any())
         {
-            existBaseParam.MaterialsWorkParamsList.Clear();
-            existBaseParam.MaterialsWorkParamsList = baseParam.MaterialsWorkParamsList;
-        }
-
-        // TODO: Костыль, нужно реализовать в будущем корректное обновление
-        // связанных сущностей в Generic Repository
-        if (existBaseParam.MaterialsWorkParamsList != null && existBaseParam.MaterialsWorkParamsList.Any())
-        {
             foreach (MaterialsWorkParams materialWorkParam in existBaseParam.MaterialsWorkParamsList)
             {
                 // Обновление существующих элементов
                 if (materialWorkParam.Id != Guid.Empty)
                 {
+                    MaterialsWorkParams baseMaterialParam = baseParam.MaterialsWorkParamsList.FirstOrDefault(p => p.MaterialId == materialWorkParam.MaterialId);
+
+                    if (baseMaterialParam == null)
+                        throw new BusinessLogicException("Не удалось найти шихтовый материал для обновления удельного расхода ЖРМ");
+
+                    materialWorkParam.Consumption = baseMaterialParam.Consumption;
+
                     _dbContext.Entry(materialWorkParam).State = EntityState.Modified;
                 }
             }
@@ -166,7 +165,7 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
 
     public async Task<FurnaceBaseParam> RemoveAsync(Guid id)
     {
-        FurnaceBaseParam deletedFurnaceParam = await _furnaceWorkParamsRepository.DeleteAsync(id);
+        FurnaceBaseParam deletedFurnaceParam = await _furnaceWorkParamsRepository.RemoveByIdAsync(id);
 
         return deletedFurnaceParam;
     }

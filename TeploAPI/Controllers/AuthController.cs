@@ -48,9 +48,9 @@ namespace TeploAPI.Controllers
         /// </summary>
         [Authorize]
         [HttpGet("user")]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            UserDTO userInfo = _userService.GetInformation();
+            UserDTO userInfo = await _userService.GetInformation();
 
             return Ok(new Response { IsSuccess = true, Result = userInfo });
         }

@@ -26,15 +26,15 @@ namespace TeploAPI.Services
         /// <summary>
         /// Получение значений справочника корректировочных коэффициентов для текущего пользователя
         /// </summary>
-        public Reference GetCoefficientsReference()
+        public async Task<Reference> GetCoefficientsReference()
         {
             Guid userId = _user.GetUserId();
 
-            CokeCunsumptionReference cokeCoefficients = _cokeConsumptionReferenceRepository.GetSingle(x => x.UserId == userId);
+            CokeCunsumptionReference cokeCoefficients = await _cokeConsumptionReferenceRepository.GetSingleAsync(x => x.UserId == userId);
             if (cokeCoefficients == null)
                 throw new BusinessLogicException("Не удалось получить значения справочника корректировочных коэффициентов, влияющих на расход кокса");
 
-            FurnaceCapacityReference furnanceCapacityCoefficients = _furnaceCapacityReferenceRepository.GetSingle(x => x.UserId == userId);
+            FurnaceCapacityReference furnanceCapacityCoefficients = await _furnaceCapacityReferenceRepository.GetSingleAsync(x => x.UserId == userId);
             if (furnanceCapacityCoefficients == null)
                 throw new BusinessLogicException("Не удалось получить значения справочника корректировочных коэффициентов, влияющих на производительность печи");
 
@@ -46,7 +46,7 @@ namespace TeploAPI.Services
         /// </summary>
         public async Task<Reference> UpdateCoefficientsReference(Reference reference)
         {
-            Reference existReference = GetCoefficientsReference();
+            Reference existReference = await GetCoefficientsReference();
 
             existReference.CokeCunsumptionReference.IronMassFractionIncreaseInOreRash = reference.CokeCunsumptionReference.IronMassFractionIncreaseInOreRash;
             existReference.CokeCunsumptionReference.ShareCrudeOreReductionCharge = reference.CokeCunsumptionReference.ShareCrudeOreReductionCharge;

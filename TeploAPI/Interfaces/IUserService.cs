@@ -15,9 +15,9 @@ public interface IUserService
     /// </summary>
     /// <returns>JWT-токен</returns>
     Task<string> AuthenticateAsync(Login login);
-    
+
     /// <summary>
     /// Получение информации о текущем пользователе
     /// </summary>
-    UserDTO GetInformation();
+    Task<UserDTO> GetInformation();
 }

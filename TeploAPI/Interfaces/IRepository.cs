@@ -1,56 +1,84 @@
 ﻿using System.Linq.Expressions;
 
-namespace TeploAPI.Interfaces;
-
-public interface IRepository<TEntity> where TEntity : class
+namespace TeploAPI.Interfaces
 {
-    /// <summary>
-    /// Получить все объекты
-    /// </summary>
-    IQueryable<TEntity> GetAll();
+    public interface IRepository<T> where T : class
+    {
+        /// <summary>
+        /// Добавить объект
+        /// </summary>
+        Task<T> AddAsync(T objModel);
 
-    /// <summary>
-    /// Получить все объекты, соответствующие лямбда-выражению
-    /// </summary>
-    IQueryable<TEntity> Get(Func<TEntity, bool> predicate);
+        /// <summary>
+        /// Добавить несколько объектов
+        /// </summary>
+        Task AddRangeAsync(IEnumerable<T> objModel);
 
-    /// <summary>
-    /// Получить первый попавшийся объект, соответствующий лямбда-выражению
-    /// </summary>
-    TEntity? GetSingle(Func<TEntity, bool> predicate);
+        /// <summary>
+        /// Получить объект по идентификатору
+        /// </summary>
+        T? GetById(Guid id);
 
-    /// <summary>
-    /// Получение объекта по его идентификатору
-    /// </summary>
-    Task<TEntity> GetByIdAsync(Guid id);
+        /// <summary>
+        /// Получить объект по идентификатору (async)
+        /// </summary>
+        Task<T?> GetByIdAsync(Guid id, bool isTracking = true);
 
-    /// <summary>
-    /// Создание объекта
-    /// </summary>
-    Task<TEntity> AddAsync(TEntity furnace);
+        /// <summary>
+        /// Получить единичный объект, соответствующий лямбда-выражению
+        /// </summary>
+        T? GetSingle(Expression<Func<T, bool>> predicate);
 
-    /// <summary>
-    /// Редактирование объекта
-    /// </summary>
-    Task<TEntity> UpdateAsync(TEntity furnace);
+        /// <summary>
+        /// Получить единичный объект, соответствующий лямбда-выражению (async)
+        /// </summary>
+        Task<T?> GetSingleAsync(Expression<Func<T, bool>> predicate);
 
-    /// <summary>
-    /// Удаление объекта
-    /// </summary>
-    Task<TEntity> DeleteAsync(Guid id);
+        /// <summary>
+        /// Получить список объектов, соответствующих лямбда-выражению
+        /// </summary>
+        IQueryable<T> Get(Expression<Func<T, bool>> predicate);
 
-    /// <summary>
-    /// Сохранение изменений
-    /// </summary>
-    Task SaveChangesAsync();
+        /// <summary>
+        /// Получить все объекты с вложенными
+        /// </summary>
+        public IQueryable<T> GetWithInclude(params Expression<Func<T, object>>[] includeProperties);
 
-    /// <summary>
-    /// Получить объекты с зависимостями
-    /// </summary>
-    IQueryable<TEntity> GetWithInclude(params Expression<Func<TEntity, object>>[] includeProperties);
+        /// <summary>
+        /// Получить все объекты с вложенными, соответствующие лямбда-выражению
+        /// </summary>
+        public IEnumerable<T> GetWithInclude(Func<T, bool> predicate, params Expression<Func<T, object>>[] includeProperties);
 
-    /// <summary>
-    /// Получить объекты с зависимостями, соответствующие лямбда-выражению
-    /// </summary>
-    IEnumerable<TEntity> GetWithInclude(Func<TEntity, bool> predicate, params Expression<Func<TEntity, object>>[] includeProperties);
+        /// <summary>
+        /// Получить все объекты
+        /// </summary>
+        IEnumerable<T> GetAll();
+
+        /// <summary>
+        /// Количество объектов
+        /// </summary>
+        int Count();
+
+        /// <summary>
+        /// Количество объектов (async)
+        /// </summary>
+        Task<int> CountAsync();
+
+        /// <summary>
+        /// Обновить объект
+        /// </summary>
+        Task<T> UpdateAsync(T objModel);
+
+        /// <summary>
+        /// Удалить объект
+        /// </summary>
+        Task<T?> RemoveAsync(T objModel);
+
+        /// <summary>
+        /// Удалить объект
+        /// </summary>
+        Task<T> RemoveByIdAsync(Guid id);
+
+        void Dispose();
+    }
 }

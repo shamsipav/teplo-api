@@ -7,7 +7,7 @@ namespace TeploAPI.Interfaces
         /// <summary>
         /// Получение значений справочника корректировочных коэффициентов для текущего пользователя
         /// </summary>
-        Reference GetCoefficientsReference();
+        Task<Reference> GetCoefficientsReference();
 
         /// <summary>
         /// Обновление значений справочника корректировочных коэффициентов для текущего пользователя

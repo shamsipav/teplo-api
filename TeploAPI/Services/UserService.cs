@@ -1,8 +1,8 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using TeploAPI.Dtos;
 using TeploAPI.Exceptions;
 using TeploAPI.Interfaces;
@@ -43,7 +43,7 @@ public class UserService : IUserService
         if (!validationResult.IsValid)
             throw new BadRequestException(validationResult.Errors[0].ErrorMessage);
 
-        User existUser = _userRepository.GetSingle(u => u.Email == user.Email);
+        User existUser = await _userRepository.GetSingleAsync(u => u.Email == user.Email);
 
         if (existUser != null)
             throw new BusinessLogicException("Пользователь с таким Email уже зарегистрирован");
@@ -101,7 +101,7 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(password))
             throw new BadRequestException("Password яляется обязательным полем");
 
-        User existUser = _userRepository.GetSingle(u => u.Email == email.ToLower());
+        User existUser = await _userRepository.GetSingleAsync(u => u.Email == email.ToLower());
         if (existUser is null)
             throw new BusinessLogicException("Пользователь с таким Email не найден");
 
@@ -131,7 +131,7 @@ public class UserService : IUserService
         return encodedJwt;
     }
 
-    public UserDTO GetInformation()
+    public async Task<UserDTO> GetInformation()
     {
         IHeaderDictionary headers = _httpContextAccessor.HttpContext.Request.Headers;
 
@@ -145,7 +145,7 @@ public class UserService : IUserService
 
         if (email != null)
         {
-            existUser = _userRepository.GetSingle(u => u.Email == email.ToLower());
+            existUser = await _userRepository.GetSingleAsync(u => u.Email == email.ToLower());
             if (existUser is null)
                 throw new BusinessLogicException("Пользователь с таким Email не найден");
         }
