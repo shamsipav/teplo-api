@@ -18,6 +18,7 @@ public class UserService : IUserService
     private readonly IRepository<CokeCunsumptionReference> _cokeConsumptionReferenceRepository;
     private readonly IRepository<FurnaceCapacityReference> _furnaceCapacityReferenceRepository;
     private readonly IRepository<Furnace> _furnaceRepository;
+    private readonly IRepository<Material> _materialRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IValidator<User> _validator;
 
@@ -26,12 +27,14 @@ public class UserService : IUserService
         IValidator<User> validator,
         IRepository<CokeCunsumptionReference> cokeConsumptionReferenceRepository,
         IRepository<FurnaceCapacityReference> furnaceCapacityReferenceRepository,
+        IRepository<Material> materialRepository,
         IRepository<Furnace> furnaceRepository)
     {
         _userRepository = userRepository;
         _cokeConsumptionReferenceRepository = cokeConsumptionReferenceRepository;
         _furnaceCapacityReferenceRepository = furnaceCapacityReferenceRepository;
         _furnaceRepository = furnaceRepository;
+        _materialRepository = materialRepository;
         _httpContextAccessor = httpContextAccessor;
         _validator = validator;
     }
@@ -61,6 +64,7 @@ public class UserService : IUserService
         // TODO: Возможно, стоит разнести логику ниже по разным сервисам
         CokeCunsumptionReference cokeCoefficients = CokeCunsumptionReference.GetDefaultData();
         FurnaceCapacityReference furnaceCoefficients = FurnaceCapacityReference.GetDefaultData();
+        Material defaultMaterial = Material.GetDefaultMaterial();
 
         FurnaceBaseParam defaultFurnaceParam = FurnaceBaseParam.GetDefaultData();
         var defaultFurnace = new Furnace
@@ -82,10 +86,12 @@ public class UserService : IUserService
         cokeCoefficients.UserId = user.Id;
         furnaceCoefficients.UserId = user.Id;
         defaultFurnace.UserId = user.Id;
+        defaultMaterial.UserId = user.Id;
 
         await _cokeConsumptionReferenceRepository.AddAsync(cokeCoefficients);
         await _furnaceCapacityReferenceRepository.AddAsync(furnaceCoefficients);
         await _furnaceRepository.AddAsync(defaultFurnace);
+        await _materialRepository.AddAsync(defaultMaterial);
 
         return user;
     }

@@ -100,5 +100,30 @@
         /// Содержание Осн1, %
         /// </summary>
         public double BaseOne { get; set; }
+
+        public static Material GetDefaultMaterial()
+        {
+            return new Material
+            {
+                Name = "Окатыш",
+                Moisture = 5,
+                Fe2O3 = 95,
+                Fe = 66,
+                FeO = 1,
+                CaO = 0.5,
+                SiO2 = 2,
+                MgO = 0.5,
+                Al2O3 = 1,
+                TiO2 = 0.1,
+                MnO = 0.05,
+                P = 0.01,
+                S = 0.005,
+                Zn = 0.001,
+                Mn = 0.005,
+                Cr = 0.001,
+                FiveZero = 90,
+                BaseOne = 0.5 / 2
+            };
+        }
     }
 }
