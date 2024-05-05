@@ -105,12 +105,12 @@ namespace TeploAPI.Repositories
         public async Task<TEntity> RemoveAsync(TEntity objModel)
         {
             _context.Set<TEntity>().Remove(objModel);
-            _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return objModel;
         }
 
-        public async Task<TEntity> RemoveByIdAsync(Guid id)
+        public async Task<TEntity?> RemoveByIdAsync(Guid id)
         {
             TEntity? entity = await GetByIdAsync(id);
             if (entity != null)

@@ -82,7 +82,7 @@ namespace TeploAPI.Interfaces
         /// <summary>
         /// Удалить объект
         /// </summary>
-        Task<T> RemoveAsync(T objModel);
+        Task<T?> RemoveAsync(T objModel);
 
         /// <summary>
         /// Удалить объект
