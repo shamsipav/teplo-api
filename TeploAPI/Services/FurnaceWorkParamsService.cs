@@ -39,7 +39,8 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
     public async Task<FurnaceBaseParam> CreateOrUpdateAsync(FurnaceBaseParam dailyInfo)
     {
         // Если пришла дата, которая уже была для конкретной печи - обновляем суточную информацию
-        FurnaceBaseParam existDaily = GetSingle(dailyInfo.FurnaceId, dailyInfo.Day);
+        //FurnaceBaseParam existDaily = GetSingle(dailyInfo.FurnaceId, dailyInfo.Day);
+        FurnaceBaseParam existDaily = _furnaceWorkParamsRepository.GetSingle(x => x.Id == dailyInfo.Id);
 
         if (existDaily != null)
         {
@@ -57,12 +58,19 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
     public List<FurnaceBaseParam> GetAll(bool isDaily = false)
     {
         Guid userId = _user.GetUserId();
-        return _furnaceWorkParamsRepository.Get(p => (isDaily ? p.Day != DateTime.MinValue : p.Day == DateTime.MinValue) && p.UserId == userId).ToList();
+        if (isDaily)
+        {
+            return _furnaceWorkParamsRepository.GetWithInclude(w => w.UserId == userId && w.Day != DateTime.MinValue, p => p.MaterialsWorkParamsList).ToList();
+        }
+        else
+        {
+            return _furnaceWorkParamsRepository.Get(p => p.Day == DateTime.MinValue && p.UserId == userId).ToList();
+        }
     }
 
     public async Task<FurnaceBaseParam> GetSingleAsync(Guid id)
     {
-        return await _furnaceWorkParamsRepository.GetByIdAsync(id);
+        return _furnaceWorkParamsRepository.GetWithInclude(x => x.Id == id, p => p.MaterialsWorkParamsList).FirstOrDefault();
     }
 
     public FurnaceBaseParam GetSingle(Guid id, DateTime day)
@@ -137,19 +145,21 @@ public class FurnaceWorkParamsService : IFurnaceWorkParamsService
             existBaseParam.MaterialsWorkParamsList = baseParam.MaterialsWorkParamsList;
         }
 
-        // Этот метод не обновит связанную таблицу MaterialsWorkParams
-        await _furnaceWorkParamsRepository.UpdateAsync(existBaseParam);
-
-        // TODO: Адский костыль, нужно реализовать в будущем корректное обновление
+        // TODO: Костыль, нужно реализовать в будущем корректное обновление
         // связанных сущностей в Generic Repository
-        List<MaterialsWorkParams> materialsWorkParams = await _dbContext.MaterialsWorkParams.Where(x => x.FurnaceBaseParamId == existBaseParam.Id).ToListAsync();
-        _dbContext.MaterialsWorkParams.RemoveRange(materialsWorkParams);
-        foreach (MaterialsWorkParams materialWorkParam in baseParam.MaterialsWorkParamsList)
+        if (existBaseParam.MaterialsWorkParamsList != null && existBaseParam.MaterialsWorkParamsList.Any())
         {
-            materialWorkParam.FurnaceBaseParamId = existBaseParam.Id;
-            _dbContext.MaterialsWorkParams.Add(materialWorkParam);
+            foreach (MaterialsWorkParams materialWorkParam in existBaseParam.MaterialsWorkParamsList)
+            {
+                // Обновление существующих элементов
+                if (materialWorkParam.Id != Guid.Empty)
+                {
+                    _dbContext.Entry(materialWorkParam).State = EntityState.Modified;
+                }
+            }
         }
-        await _dbContext.SaveChangesAsync();
+
+        await _furnaceWorkParamsRepository.UpdateAsync(existBaseParam);
 
         return existBaseParam;
     }

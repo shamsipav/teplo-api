@@ -4,6 +4,7 @@ using FluentValidation.Results;
 using TeploAPI.Exceptions;
 using TeploAPI.Interfaces;
 using TeploAPI.Models;
+using TeploAPI.Models.Furnace;
 using TeploAPI.Utils.Extentions;
 
 namespace TeploAPI.Services
@@ -11,14 +12,17 @@ namespace TeploAPI.Services
     public class MaterialService : IMaterialService
     {
         private readonly IRepository<Material> _materialRepository;
+        private readonly IRepository<FurnaceBaseParam> _variantRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IValidator<Material> _validator;
 
-        public MaterialService(IRepository<Material> materialRepository, IHttpContextAccessor httpContextAccessor, IValidator<Material> validator)
+        public MaterialService(IRepository<Material> materialRepository, IHttpContextAccessor httpContextAccessor, 
+            IValidator<Material> validator, IRepository<FurnaceBaseParam> variantRepository)
         {
             _materialRepository = materialRepository;
             _httpContextAccessor = httpContextAccessor;
             _validator = validator;
+            _variantRepository = variantRepository;
         }
 
         private ClaimsPrincipal _user => _httpContextAccessor.HttpContext.User;
@@ -93,6 +97,17 @@ namespace TeploAPI.Services
 
         public async Task<Material> RemoveMaterialAsync(Guid id)
         {
+            // Выборка вариантов исходных данных или посуточной информации о работе ДП
+            // где присутствует удаляемый материал
+            List<MaterialsWorkParams> existBaseParam = _variantRepository
+                                                       .GetWithInclude(p => p.MaterialsWorkParamsList)
+                                                       .SelectMany(x => x.MaterialsWorkParamsList)
+                                                       .Where(m => m.MaterialId == id)
+                                                       .ToList();
+
+            if (existBaseParam != null && existBaseParam.Any())
+                throw new BusinessLogicException($"На данный материал ссылается вариант исходных данных или посуточная информация о работе ДП");
+
             Material deletedMaterial = await _materialRepository.DeleteAsync(id);
 
             return deletedMaterial;
