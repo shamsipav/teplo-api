@@ -49,9 +49,12 @@ namespace TeploAPI.Repositories
             return _context.Set<TEntity>().FirstOrDefault(predicate);
         }
 
-        public async Task<TEntity?> GetSingleAsync(Expression<Func<TEntity, bool>> predicate)
+        public async Task<TEntity?> GetSingleAsync(Expression<Func<TEntity, bool>> predicate, bool isTracking = true)
         {
-            return await _context.Set<TEntity>().FirstOrDefaultAsync(predicate);
+            if (isTracking)
+                return await _context.Set<TEntity>().FirstOrDefaultAsync(predicate);
+
+            return await _context.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(predicate);
         }
 
         public IQueryable<TEntity> Get(Expression<Func<TEntity, bool>> predicate)

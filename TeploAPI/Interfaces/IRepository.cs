@@ -32,7 +32,7 @@ namespace TeploAPI.Interfaces
         /// <summary>
         /// Получить единичный объект, соответствующий лямбда-выражению (async)
         /// </summary>
-        Task<T?> GetSingleAsync(Expression<Func<T, bool>> predicate);
+        Task<T?> GetSingleAsync(Expression<Func<T, bool>> predicate, bool isTracking = true);
 
         /// <summary>
         /// Получить список объектов, соответствующих лямбда-выражению

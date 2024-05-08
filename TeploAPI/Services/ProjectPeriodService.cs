@@ -28,12 +28,12 @@ public class ProjectPeriodService : IProjectPeriodService
 
     public async Task<UnionResultViewModel> ProcessProjectPeriod(FurnaceProjectParam projectPeriodFurnaceData, Guid inputDataId)
     {
-        FurnaceBaseParam basePeriodParam = await _furnaceWorkParamRepository.GetSingleAsync(p => p.Id == inputDataId);
+        FurnaceBaseParam basePeriodParam = await _furnaceWorkParamRepository.GetSingleAsync(p => p.Id == inputDataId, false);
 
         if (basePeriodParam == null)
             throw new BusinessLogicException($"В базе данных нет сохраненных вариантов исходных данных с идентификатором {inputDataId}");
 
-        FurnaceBaseParam basePeriodParamClear = await _furnaceWorkParamRepository.GetSingleAsync(p => p.Id == inputDataId);
+        FurnaceBaseParam basePeriodParamClear = await _furnaceWorkParamRepository.GetSingleAsync(p => p.Id == inputDataId, false);
 
         Reference reference = await _referenceService.GetCoefficientsReference();
 
