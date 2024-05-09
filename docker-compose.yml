@@ -10,18 +10,18 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: teplo
     ports:
-      - "0.0.0.0:5503:5432"
+      - "0.0.0.0:7703:5432"
 
   api:
     container_name: teplo-api
     hostname: api
     build: ./TeploAPI
     ports:
-      - "0.0.0.0:5501:5501"
+      - "0.0.0.0:7701:7701"
 
   frontend:
     build: ./teplo-client
     ports:
-      - 5502:5502
+      - 7702:7702
     depends_on:
       - api
