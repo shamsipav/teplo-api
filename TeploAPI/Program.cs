@@ -1,3 +1,4 @@
+using System.Reflection;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -62,6 +63,11 @@ builder.Services.AddSwaggerGen(c =>
             new string[] { }
         }
     });
+    
+    // Включаем XML-комментарии
+    string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -21,6 +21,11 @@ namespace TeploAPI.Controllers
             _projectPeriodService = projectPeriodService;
         }
 
+        /// <summary>
+        /// Получение результатов расчета теплового режима в проектном периоде
+        /// </summary>
+        /// <param name="projectPeriodFurnaceData">Исходные данные для проектного периода</param>
+        /// <param name="inputDataId">Идентификатор варианта исходных данных базового периода</param>
         [HttpPost]
         public async Task<IActionResult> PostAsync(FurnaceProjectParam projectPeriodFurnaceData, Guid inputDataId)
         {

@@ -30,6 +30,9 @@ namespace TeploAPI.Controllers
             return Ok(new Response { IsSuccess = true, Result = reference });
         }
 
+        /// <summary>
+        /// Изменение значений справочника корректировочных коэффициентов
+        /// </summary>
         [HttpPut]
         public async Task<IActionResult> PostAsync(Reference reference)
         {
