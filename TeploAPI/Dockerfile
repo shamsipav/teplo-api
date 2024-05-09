@@ -1,28 +1,15 @@
-# Используем базовый образ с ASP.NET 6.0
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+WORKDIR /App
 
-# Устанавливаем рабочую директорию внутри контейнера
-WORKDIR /app
-
-# Используем SDK
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-
-# Копируем файлы в контейнер
-COPY . /src
-# Устанавливаем рабочую директорию внутри контейнера
-WORKDIR /src
-
-# Устанавливаем зависимости приложения и параметры компиляции
-RUN ls
+# Copy everything
+COPY . ./
+# Restore as distinct layers
 RUN dotnet restore
-RUN dotnet build "./TeploAPI.csproj" -c Release -o /app/build
+# Build and publish a release
+RUN dotnet publish -c Release -o out
 
-FROM build AS publish
-RUN dotnet publish "./TeploAPI.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-
-# Определяем команду запуска контейнера
+# Build runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /App
+COPY --from=build-env /App/out .
 ENTRYPOINT ["dotnet", "TeploAPI.dll"]
