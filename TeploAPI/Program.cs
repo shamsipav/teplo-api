@@ -141,4 +141,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+Console.WriteLine($"Starting application with {environment} mode\n");
+
 app.Run();
