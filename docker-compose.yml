@@ -18,6 +18,7 @@ services:
     build: ./TeploAPI
     ports:
       - 7701:7701
+    command: ["dotnet", "ef", "database", "update"]
 
   frontend:
     build: ./teplo-client
